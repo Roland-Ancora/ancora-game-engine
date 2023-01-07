@@ -1,0 +1,13 @@
+
+# Visual Studio files
+Ancora Game Engine.sln
+Ancora Game Engine.vcxproj
+Ancora Game Engine.vcxproj.filters
+Ancora Game Engine.vcxproj.user
+.vs/
+x64/
+
+# Dependencies
+assimp-vc143-mt.dll
+glew32.dll
+glfw3.dll
