@@ -39,4 +39,10 @@ void Window::set_fullscreen()
 	glViewport(0, 0, width, height);
 }
 
+// Set camera aspects ratio based on window dimensions.
+void Window::add_camera(Camera *camera)
+{
+	camera->set_aspects_ratio(width, height);
+}
+
 }

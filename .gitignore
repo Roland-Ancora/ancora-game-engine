@@ -11,3 +11,7 @@ x64/
 assimp-vc143-mt.dll
 glew32.dll
 glfw3.dll
+depends/
+
+# Other
+main.cpp
