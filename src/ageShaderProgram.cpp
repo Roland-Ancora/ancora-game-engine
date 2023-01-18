@@ -2,6 +2,10 @@
 
 
 
+using namespace age;
+
+
+
 const char main_3d_vertex_shader[] = "./resources/shaders/age_main_3d_shader.vert";
 const char main_3d_fragment_shader[] = "./resources/shaders/age_main_3d_shader.frag";
 const char main_2d_vertex_shader[] = "./resources/shaders/age_main_2d_shader.vert";

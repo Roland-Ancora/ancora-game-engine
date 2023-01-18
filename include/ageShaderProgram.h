@@ -31,15 +31,19 @@
 
 
 
-class ShaderProgram
-{
-	GLuint shader_prog_id, MVP_mat_loc, MV_mat_loc;
-public:
-	GLuint get_shader_program_id() { return shader_prog_id; }
-	GLuint get_MVP_matrix_location() { return MVP_mat_loc; }
-	GLuint get_MV_matrix_location() { return MV_mat_loc; }
+namespace age {
 
-	static ShaderProgram create_main_shader_3d_program();
-	static ShaderProgram create_main_shader_2d_program();
-	static ShaderProgram create_shader_program(const char* vert_shader_file, const char* frag_shader_file);
-};
+	class ShaderProgram
+	{
+		GLuint shader_prog_id, MVP_mat_loc, MV_mat_loc;
+	public:
+		GLuint get_shader_program_id() { return shader_prog_id; }
+		GLuint get_MVP_matrix_location() { return MVP_mat_loc; }
+		GLuint get_MV_matrix_location() { return MV_mat_loc; }
+
+		static ShaderProgram create_main_shader_3d_program();
+		static ShaderProgram create_main_shader_2d_program();
+		static ShaderProgram create_shader_program(const char* vert_shader_file, const char* frag_shader_file);
+	};
+
+}

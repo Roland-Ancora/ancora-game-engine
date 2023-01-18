@@ -30,22 +30,22 @@
 
 namespace age {
 
-class Window {
-	GLFWwindow* window;
-	short width, height;
-public:
-	Window(short window_width, short window_height, const char window_title[]);
+	class Window {
+		GLFWwindow* window;
+		short width, height;
+	public:
+		Window(short window_width, short window_height, const char window_title[]);
 
-	int is_close() { return glfwWindowShouldClose(window); }
-	short get_width() { return width; }
-	short get_height() { return height; }
+		int is_close() { return glfwWindowShouldClose(window); }
+		short get_width() { return width; }
+		short get_height() { return height; }
 
-	void close();
-	void update();
-	void set_fullscreen();
-	void add_camera(Camera *camera);
+		void close();
+		void update();
+		void set_fullscreen();
+		void add_camera(Camera* camera);
 
-	operator GLFWwindow* () const { return window; }
-};
+		operator GLFWwindow* () const { return window; }
+	};
 
 }

@@ -2,7 +2,9 @@
 
 
 
-namespace age {
+using namespace age;
+
+
 
 // Create a window with a specified width, height and title.
 Window::Window(short window_width, short window_height, const char window_title[])
@@ -43,6 +45,4 @@ void Window::set_fullscreen()
 void Window::add_camera(Camera *camera)
 {
 	camera->set_aspects_ratio(width, height);
-}
-
 }

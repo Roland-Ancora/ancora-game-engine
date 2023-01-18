@@ -2,7 +2,9 @@
 
 
 
-namespace age {
+using namespace age;
+
+
 
 glm::mat4 Camera::ident_mat = glm::mat4(1);
 
@@ -94,6 +96,4 @@ void Camera3D::set_aspects_ratio(float x, float y)
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
-}
-
 }
