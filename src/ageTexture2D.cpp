@@ -8,6 +8,11 @@ using namespace age;
 
 
 
+Texture2D::~Texture2D()
+{
+	glDeleteTextures(1, &texture_id);
+}
+
 // Load image texture from file_name. Returns -1 if texture didn't load and 1 if it is.
 int Texture2D::load_from_file(const char* file_name)
 {

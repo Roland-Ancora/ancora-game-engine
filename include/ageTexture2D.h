@@ -30,6 +30,7 @@ namespace age {
 		GLuint texture_id;
 		int texture_width, texture_height;
 	public:
+		~Texture2D();
 		int load_from_file(const char* file_name);
 		int get_width() { return texture_width; }
 		int get_height() { return texture_height; }
