@@ -18,10 +18,15 @@
 //	in the shader when change drawing object. The model_matrix is a
 //	pointer and he just points to a model matrix of any object.
 // 
+//		What is the static field active_camera? First of all, that's
+//	require for a Model3D objects, for a send model matrix to the
+//	camera (because Camera controls shaders program). Also, in future
+//	this mechanism allows create control over a few camers.
 // 
 // 
 // 
-//		NOTE ---
+// 
+//		NOTES ---
 //			When I will add possibility to change perspective and 
 //	orthographic mode, set_aspcets_ration will be able only Camera
 //	function, not virtual.
@@ -48,6 +53,7 @@ namespace age {
 	class Camera {
 	protected:
 		Camera();
+		static Camera* active_camera;
 		ShaderProgram main_shader_prog;
 		ShaderProgram* now_active_shader = &main_shader_prog;
 		glm::mat4 projection_matrix, view_matrix, MVP_matrix, MV_matrix;
@@ -55,8 +61,10 @@ namespace age {
 		float aspects_ratio = 1.0f;
 		static glm::mat4 ident_mat;
 	public:
+		static Camera* get_active_camera() { return active_camera; }
 		virtual void clear_buffers() {};
 		virtual void set_aspects_ratio(float x, float y) {};
+		void set_model_matrix(glm::mat4* model_mat);
 	};
 
 
