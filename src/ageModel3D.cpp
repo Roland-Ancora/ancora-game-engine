@@ -24,3 +24,26 @@ void Model3D::show()
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void Model3D::set_position(float x, float y, float z)
+{
+	translate_mat = glm::translate(translate_mat, glm::vec3(x - x_pos, y - y_pos, z - z_pos));
+	x_pos = x, y_pos = y, z_pos = z;
+}
+
+void Model3D::move(float x, float y, float z)
+{
+	translate_mat = glm::translate(translate_mat, glm::vec3(x, y, z));
+	x_pos += x, y_pos += y, z_pos += z;
+}
+
+void Model3D::set_rotation(float angle, rotate_vector vec)
+{
+	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
+	rotate_mat *= rotate_by_vector_now;
+}
+
+void Model3D::rotate(float angle, rotate_vector vec)
+{
+	rotate_mat = glm::rotate(rotate_mat, angle, vec);
+}
