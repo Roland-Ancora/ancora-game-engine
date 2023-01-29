@@ -47,3 +47,57 @@ void Model3D::rotate(float angle, rotate_vector vec)
 {
 	rotate_mat = glm::rotate(rotate_mat, angle, vec);
 }
+
+
+
+
+
+
+Model3dGroupNode::~Model3dGroupNode()
+{
+	delete[] childs;
+}
+
+void Model3dGroupNode::show()
+{
+	model.show();
+	for (int i = 0; i < childs_count; i++)
+		childs[i].show();
+}
+
+void Model3dGroupNode::set_from_data_node(Model3dGroupDataNode* node)
+{
+	model.set_model_3d_data(&node->model);
+	model.set_position(node->position.x, node->position.y, node->position.z);
+	model.set_rotation(-node->rotation.x, AGE_ROTATE_AROUND_X); // - because OpenGL rotates object counterclock-wise
+	model.set_rotation(-node->rotation.y, AGE_ROTATE_AROUND_Y);
+	model.set_rotation(-node->rotation.z, AGE_ROTATE_AROUND_Z);
+
+	childs_count = node->childs_count;
+	childs = new Model3dGroupNode[childs_count];
+	for (int i = 0; i < childs_count; i++)
+		childs[i].set_from_data_node(&node->childs[i]);
+}
+
+
+
+
+
+Model3dGroup::~Model3dGroup()
+{
+	delete[] childs;
+}
+
+void Model3dGroup::show()
+{
+	for (int i = 0; i < childs_count; i++)
+		childs[i].show();
+}
+
+void Model3dGroup::set_group_from_data(Model3dGroupData* data)
+{
+	childs = new Model3dGroupNode[data->childs_count];
+	childs_count = data->childs_count;
+	for (int i = 0; i < childs_count; i++)
+		childs[i].set_from_data_node(&data->childs[i]);
+}

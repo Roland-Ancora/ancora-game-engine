@@ -91,3 +91,44 @@ int Importer3D::load_model(std::string dir_name, std::string file_name, Model3dD
 	importer.FreeScene();
 	return 1;
 }
+
+void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node)
+{
+	if (node->mNumMeshes > 0) {
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
+		get_vertices_data_from_mesh(mesh, scene, model_data_node.model);
+		get_texture_coords_data_from_mesh(mesh, scene, model_data_node.model);
+		get_normals_data_from_mesh(mesh, scene, model_data_node.model);
+		get_indices_data_from_mesh(mesh, scene, model_data_node.model);
+		std::string texture_file = get_diffuse_texture_file_name(mesh, scene, dir_name, file_name);
+		if (texture_file != "")
+			model_data_node.model.diffuse_texture.load_from_file(texture_file.c_str());
+	}
+
+	aiVector3D pos, rot, scale;
+	node->mTransformation.Decompose(scale, rot, pos);
+	model_data_node.position = glm::vec3(pos.x, pos.y, pos.z);
+	model_data_node.rotation = glm::vec3(rot.x, rot.y, rot.z);
+	model_data_node.scale = glm::vec3(scale.x, scale.y, scale.z);
+
+	model_data_node.childs_count = node->mNumChildren;
+	model_data_node.childs = new Model3dGroupDataNode[model_data_node.childs_count];
+	for (int i = 0; i < model_data_node.childs_count; i++)
+		load_model_group_node(node->mChildren[i], scene, dir_name, file_name, model_data_node.childs[i]);
+}
+
+int Importer3D::load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data)
+{
+	const aiScene* scene = importer.ReadFile(dir_name + file_name, aiProcess_Triangulate | aiProcess_FlipUVs);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		printf("Error: Can't load model. %s\n", importer.GetErrorString());
+		return -1;
+	}
+	aiNode* root_node = scene->mRootNode;
+	model_group_data.childs_count = root_node->mNumChildren;
+	model_group_data.childs = new Model3dGroupDataNode[model_group_data.childs_count];
+	for (int i = 0; i < model_group_data.childs_count; i++)
+		load_model_group_node(root_node->mChildren[i], scene, dir_name, file_name, model_group_data.childs[i]);
+	importer.FreeScene();
+	return 1;
+}

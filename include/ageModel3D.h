@@ -1,14 +1,22 @@
-//#####################################################################//
+//########################################################################//
 //
-//								Model3D
+//					Model3D, Model3dGroup, Model3dGroupNode
 //	
 //		The Model3D class is responsible for showing 3D model.
+//	Model3dGroup class is responsible for showing more 3D models.
 // 
 //		This module has external dependencies: OpenGL, GLM.
 //		This module has dependencies: ageModel3dData, Camera.
+// 
+//		Why Model3dGroupNode is friend class for Model3dGroup? For a now,
+//	Model3dGroupNode haven't any methods to interactive with user. Also,
+//	not logic if Model3dGroup will be parent class for Model3dGroupNode.
+//	It turns out that Model3dGroupNode must be private class, and must
+//	be available for Model3dGroup. Therefore, the mechanism of friendly
+//	classes is used.
 //
 //
-//#####################################################################//
+//########################################################################//
 
 
 
@@ -42,6 +50,29 @@ namespace age {
 		float* get_position() { return new float[3] {x_pos, y_pos, z_pos}; }
 		void set_rotation(float angle , rotate_vector vec);
 		void rotate(float angle, rotate_vector vec);
+	};
+
+	class Model3dGroupNode {
+		Model3D model;
+		Model3dGroupNode* childs;
+		int childs_count = 0;
+
+		friend class Model3dGroup;
+
+		~Model3dGroupNode();
+		void set_from_data_node(Model3dGroupDataNode* node);
+		void show();
+	public:
+		~Model3dGroupNode();
+	};
+
+	class Model3dGroup {
+		Model3dGroupNode* childs;
+		int childs_count = 0;
+	public:
+		~Model3dGroup();
+		void set_group_from_data(Model3dGroupData* data);
+		void show();
 	};
 
 }

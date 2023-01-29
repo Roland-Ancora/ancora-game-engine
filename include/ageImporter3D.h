@@ -38,14 +38,17 @@ namespace age {
 		Importer3D();
 
 		static Assimp::Importer importer;
+		static glm::mat4 mat4_ai_to_glm(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
 		static std::string get_diffuse_texture_file_name(aiMesh* mesh, const aiScene* scene, std::string self_dir, std::string self_file_name);
 		static void get_vertices_data_from_mesh(aiMesh* mesh, const aiScene* scene, Model3dData& model);
 		static void get_texture_coords_data_from_mesh(aiMesh* mesh, const aiScene* scene, Model3dData& model);
 		static void get_normals_data_from_mesh(aiMesh* mesh, const aiScene* scene, Model3dData& model);
 		static void get_indices_data_from_mesh(aiMesh* mesh, const aiScene* scene, Model3dData& model);
+		static void load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node);
 	public:
 		static int load_model(std::string dir_name, std::string file_name, Model3dData& model_data);
+		static int load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data);
 	};
 
 }

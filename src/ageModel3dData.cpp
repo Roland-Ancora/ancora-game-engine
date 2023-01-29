@@ -13,3 +13,15 @@ Model3dData::~Model3dData()
 	delete[] normals;
 	delete[] indices;
 }
+
+
+Model3dGroupDataNode::~Model3dGroupDataNode()
+{
+	delete[] childs;
+}
+
+
+Model3dGroupData::~Model3dGroupData()
+{
+	delete[] childs;
+}
