@@ -47,7 +47,7 @@ namespace age {
 		void show();
 		void set_position(float x, float y, float z);
 		void move(float x, float y, float z);
-		float* get_position() { return new float[3] {x_pos, y_pos, z_pos}; }
+		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		void set_rotation(float angle , rotate_vector vec);
 		void rotate(float angle, rotate_vector vec);
 	};
