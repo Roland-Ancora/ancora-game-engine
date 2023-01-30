@@ -59,7 +59,6 @@ namespace age {
 
 		friend class Model3dGroup;
 
-		~Model3dGroupNode();
 		void set_from_data_node(Model3dGroupDataNode* node);
 		void show();
 	public:
