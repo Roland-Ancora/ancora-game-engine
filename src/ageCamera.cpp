@@ -41,7 +41,8 @@ Camera3D::Camera3D()
 {
 	glEnable(GL_DEPTH_TEST);
 	main_shader_prog = ShaderProgram::create_main_shader_3d_program();
-	projection_matrix = glm::perspective(glm::radians(fov), aspects_ratio, z_near, z_far);
+	camera_mode = AGE_CAMERA_PERSPECTIVE;
+	projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
 	glUseProgram(main_shader_prog.get_shader_program_id());
 	calculate_rotation_from_radians();
 	calculate_and_use_MVP_matrices();
@@ -66,6 +67,21 @@ void Camera3D::calculate_rotation_from_radians()
 void Camera3D::clear_buffers()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Camera3D::set_aspects_ratio(float x, float y)
+{
+	aspects_ratio = x / y;
+	if (camera_mode == AGE_CAMERA_PERSPECTIVE)
+		projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
+	else
+		projection_matrix = glm::ortho(-aspects_ratio / 2 * ortho_fov, 
+										aspects_ratio / 2 * ortho_fov, 
+										-0.5f * ortho_fov, 0.5f * ortho_fov, 
+										ortho_z_near, ortho_z_far);
+	MVP_matrix = projection_matrix * MV_matrix;
+	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
+	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 }
 
 void Camera3D::set_position(float x, float y, float z)
@@ -100,11 +116,47 @@ void Camera3D::rotate(float x, float y)
 	calculate_and_use_MVP_matrices();
 }
 
-void Camera3D::set_aspects_ratio(float x, float y)
+void Camera3D::set_orthographic()
 {
-	aspects_ratio = x / y;
-	projection_matrix = glm::perspective(glm::radians(fov), aspects_ratio, z_near, z_far);
+	camera_mode = AGE_CAMERA_ORTHOGRAPHIC;
+	projection_matrix = glm::ortho(-(aspects_ratio / 2) * ortho_fov,
+									aspects_ratio / 2 * ortho_fov,
+									-0.5f * ortho_fov,
+									0.5f * ortho_fov, ortho_z_near, ortho_z_far);
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
+}
+
+void Camera3D::set_orthographic(float fov)
+{
+	ortho_fov = fov;
+	set_orthographic();
+}
+
+void Camera3D::set_orthographic(float z_near, float z_far)
+{
+	ortho_z_near = z_near;
+	ortho_z_far = z_far;
+	set_orthographic();
+}
+
+void Camera3D::set_perspective()
+{
+	camera_mode = AGE_CAMERA_PERSPECTIVE;
+	projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
+	MVP_matrix = projection_matrix * MV_matrix;
+	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
+}
+
+void Camera3D::set_perspective(float fov)
+{
+	persp_fov = fov;
+	set_perspective();
+}
+
+void Camera3D::set_perspective(float z_near, float z_far)
+{
+	persp_z_near = z_near;
+	persp_z_far = z_far;
+	set_perspective();
 }
