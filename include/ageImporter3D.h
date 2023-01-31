@@ -1,13 +1,14 @@
-//#####################################################################//
+//#########################################################################//
 //
 //							Importer3D
 //	
 //		The Importer3D class is responsible for loading 3D model data.
 // 
-//		The Importer3D class has external dependencies: ASSIMP, GLM.
+//		The Importer3D class has external dependencies: ASSIMP, GLM,
+//	std.
 // 
 //		The Importer3D class has dependencies: ageTexture2D,
-//	ageModel3dData.
+//	ageModel3dData, ageAnimation3D.
 // 
 // 
 // 
@@ -15,9 +16,10 @@
 //		NOTES ----
 //			load_model requires directory name and file name apart. But it
 //	 should require only one full file name.
+//			load_animation loads animation only from first channel. 
 //
 //
-//#####################################################################//
+//#########################################################################//
 
 
 
@@ -30,6 +32,7 @@
 #include "assimp/postprocess.h"
 #include "ageTexture2D.h"
 #include "ageModel3dData.h"
+#include "ageAnimation3D.h"
 
 
 namespace age {
@@ -49,6 +52,7 @@ namespace age {
 	public:
 		static int load_model(std::string dir_name, std::string file_name, Model3dData& model_data);
 		static int load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data);
+		static int load_animation(std::string dir_name, std::string file_name, Animation3D& animation_data);
 	};
 
 }

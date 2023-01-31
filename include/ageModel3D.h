@@ -6,7 +6,8 @@
 //	Model3dGroup class is responsible for showing more 3D models.
 // 
 //		This module has external dependencies: OpenGL, GLM.
-//		This module has dependencies: ageModel3dData, Camera.
+//		This module has dependencies: ageModel3dData, ageCamera, 
+//	ageAnimation3D, ageProgramClock.
 // 
 //		Why Model3dGroupNode is friend class for Model3dGroup? For a now,
 //	Model3dGroupNode haven't any methods to interactive with user. Also,
@@ -26,6 +27,8 @@
 #include "../depends/glm/gtc/matrix_transform.hpp"
 #include "../include/ageModel3dData.h"
 #include "../include/ageCamera.h"
+#include "../include/ageAnimation3D.h"
+#include "../include/ageProgramClock.h"
 
 
 
@@ -39,6 +42,7 @@ namespace age {
 
 
 	class Model3D {
+	protected:
 		Model3dData* model_data;
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
@@ -53,6 +57,25 @@ namespace age {
 		void set_scale(float x, float y, float z);
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
+	};
+
+	class Model3D_Anim : public Model3D {
+		Animation3D* anim;
+		int anim_last_node = 0;
+		glm::mat4 anim_matrix = glm::mat4(1);
+		double now_play_time = 0.0f;
+
+		bool is_anim_loop = false;
+		bool anim_play = false;
+
+		void update_anim_matrix();
+	public:
+		virtual void show();
+		void set_animation(Animation3D* animation_data) { anim = animation_data; };
+		void animation_play() { anim_play = true; };
+		void animation_stop() { anim_play = false; };
+		void set_animation_loop() { is_anim_loop = true; }
+		void disable_animation_loop() { is_anim_loop = false; }
 	};
 
 	class Model3dGroupNode {

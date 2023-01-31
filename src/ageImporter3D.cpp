@@ -132,3 +132,42 @@ int Importer3D::load_model_group(std::string dir_name, std::string file_name, Mo
 	importer.FreeScene();
 	return 1;
 }
+
+// Load first animation and first channel of animation in file.
+int Importer3D::load_animation(std::string dir_name, std::string file_name, Animation3D& animation_data)
+{
+	const aiScene* scene = importer.ReadFile(dir_name + file_name, aiProcess_Triangulate | aiProcess_FlipUVs);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		printf("Error: Can't load model. %s\n", importer.GetErrorString());
+		return -1;
+	}
+	aiAnimation* anim = scene->mAnimations[0];
+	aiNodeAnim* first_node = anim->mChannels[0]; // get first channel
+
+	animation_data.anim_duration = anim->mDuration / anim->mTicksPerSecond; // animation duration
+	animation_data.node_num = first_node->mNumPositionKeys; // number of keys
+	animation_data.nodes = new Animation3dKey[animation_data.node_num];
+	for (int i = 0; i < animation_data.node_num; i++) {
+		aiVectorKey position_key = first_node->mPositionKeys[i];
+		animation_data.nodes[i].time_val = position_key.mTime / anim->mTicksPerSecond;
+		animation_data.nodes[i].position[0] = position_key.mValue.x;
+		animation_data.nodes[i].position[1] = position_key.mValue.y;
+		animation_data.nodes[i].position[2] = position_key.mValue.z;
+
+		aiQuatKey rotation_key = first_node->mRotationKeys[i];
+		glm::quat quaternion = glm::quat(rotation_key.mValue.x, rotation_key.mValue.y, rotation_key.mValue.z, rotation_key.mValue.w);
+		glm::vec3 eul = glm::eulerAngles(quaternion);
+		animation_data.nodes[i].rotation[0] = eul.y; // - because OpenGL rotates object counterclock-wise
+		animation_data.nodes[i].rotation[1] = eul.z + glm::radians(90.0f); // + 90 degreed because when is going export to the FBX file format, 
+// Blender rotate model rotation data and animation rotations data, but here only require model rotation.
+		animation_data.nodes[i].rotation[2] = eul.x;
+
+		aiVectorKey scaling_key = first_node->mScalingKeys[i];
+		animation_data.nodes[i].scaling[0] = scaling_key.mValue.x;
+		animation_data.nodes[i].scaling[1] = scaling_key.mValue.y;
+		animation_data.nodes[i].scaling[2] = scaling_key.mValue.z;
+	}
+
+	importer.FreeScene();
+	return 1;
+}

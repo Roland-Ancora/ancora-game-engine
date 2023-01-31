@@ -58,6 +58,85 @@ void Model3D::set_scale(float x, float y, float z)
 
 
 
+void Model3D_Anim::update_anim_matrix()
+{
+	int prev_node = anim_last_node - 1;
+	float time_keys_vals_residual = anim->nodes[anim_last_node].time_val - anim->nodes[prev_node].time_val;
+	float time_progress_btw_nodes = (now_play_time - anim->nodes[prev_node].time_val) / time_keys_vals_residual;
+	
+	// Position calculation
+	float vals_keys_pos_x_residual = anim->nodes[anim_last_node].position[0] - anim->nodes[prev_node].position[0];
+	float vals_keys_pos_y_residual = anim->nodes[anim_last_node].position[1] - anim->nodes[prev_node].position[1];
+	float vals_keys_pos_z_residual = anim->nodes[anim_last_node].position[2] - anim->nodes[prev_node].position[2];
+	float val_pos_x_done = vals_keys_pos_x_residual * time_progress_btw_nodes;
+	float val_pos_y_done = vals_keys_pos_y_residual * time_progress_btw_nodes;
+	float val_pos_z_done = vals_keys_pos_z_residual * time_progress_btw_nodes;
+	glm::vec3 pos_in_anim(anim->nodes[prev_node].position[0] + val_pos_x_done,
+							anim->nodes[prev_node].position[1] + val_pos_y_done,
+							anim->nodes[prev_node].position[2] + val_pos_z_done);
+	anim_matrix = glm::translate(anim_matrix, pos_in_anim);
+
+	// Rotation calculation
+	float vals_keys_rot_x_residual = anim->nodes[anim_last_node].rotation[0] - anim->nodes[prev_node].rotation[0];
+	float vals_keys_rot_y_residual = anim->nodes[anim_last_node].rotation[1] - anim->nodes[prev_node].rotation[1];
+	float vals_keys_rot_z_residual = anim->nodes[anim_last_node].rotation[2] - anim->nodes[prev_node].rotation[2];
+	float val_rot_x_done = vals_keys_rot_x_residual * time_progress_btw_nodes;
+	float val_rot_y_done = vals_keys_rot_y_residual * time_progress_btw_nodes;
+	float val_rot_z_done = vals_keys_rot_z_residual * time_progress_btw_nodes;
+
+	anim_matrix = glm::rotate(anim_matrix, anim->nodes[prev_node].rotation[0] + val_rot_x_done, glm::vec3(1, 0, 0));
+	anim_matrix = glm::rotate(anim_matrix, anim->nodes[prev_node].rotation[1] + val_rot_y_done, glm::vec3(0, 1, 0));
+	anim_matrix = glm::rotate(anim_matrix, anim->nodes[prev_node].rotation[2] + val_rot_z_done, glm::vec3(0, 0, 1));
+
+	// Scale calculation
+	float vals_keys_scale_x_residual = anim->nodes[anim_last_node].scaling[0] - anim->nodes[prev_node].scaling[0];
+	float vals_keys_scale_y_residual = anim->nodes[anim_last_node].scaling[1] - anim->nodes[prev_node].scaling[1];
+	float vals_keys_scale_z_residual = anim->nodes[anim_last_node].scaling[2] - anim->nodes[prev_node].scaling[2];
+	float val_scale_x_done = time_progress_btw_nodes * vals_keys_scale_x_residual + anim->nodes[prev_node].scaling[0];
+	float val_scale_y_done = time_progress_btw_nodes * vals_keys_scale_y_residual + anim->nodes[prev_node].scaling[1];
+	float val_scale_z_done = time_progress_btw_nodes * vals_keys_scale_z_residual + anim->nodes[prev_node].scaling[2];;
+	// So, I don't now why I have some problem with export model to FBX format and why I should to change z and y scale
+	anim_matrix = glm::scale(anim_matrix, glm::vec3(val_scale_x_done, val_scale_z_done, val_scale_y_done));
+}
+
+void Model3D_Anim::show()
+{
+	anim_matrix = translate_mat * rotate_mat * scale_mat;
+
+	if (anim_play) {
+		now_play_time += ProgramClock::get_eleapsed_frame_time();
+		if (now_play_time >= anim->anim_duration) {
+			if (is_anim_loop) {
+				now_play_time = now_play_time - anim->anim_duration;
+				anim_last_node = 0;
+			}
+			else {
+				now_play_time = 0.0f;
+				anim_play = false;
+			}
+		}
+		while (anim->nodes[anim_last_node].time_val < now_play_time)
+			anim_last_node++;
+		update_anim_matrix();
+	}
+
+	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBindTexture(GL_TEXTURE_2D, model_data->diffuse_texture);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, model_data->vertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, model_data->texture_coords);
+	glDrawElements(GL_TRIANGLES, model_data->indices_cnt, GL_UNSIGNED_INT, model_data->indices);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+
+
+
 
 Model3dGroupNode::~Model3dGroupNode()
 {
