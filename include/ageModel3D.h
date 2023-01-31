@@ -42,14 +42,17 @@ namespace age {
 		Model3dData* model_data;
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
+		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
 	public:
 		void set_model_3d_data(Model3dData* model_3d_data) { model_data = model_3d_data; }
 		void show();
 		void set_position(float x, float y, float z);
 		void move(float x, float y, float z);
-		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		void set_rotation(float angle , rotate_vector vec);
 		void rotate(float angle, rotate_vector vec);
+		void set_scale(float x, float y, float z);
+		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
+		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
 	};
 
 	class Model3dGroupNode {

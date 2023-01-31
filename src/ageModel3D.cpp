@@ -48,6 +48,12 @@ void Model3D::rotate(float angle, rotate_vector vec)
 	rotate_mat = glm::rotate(rotate_mat, angle, vec);
 }
 
+void Model3D::set_scale(float x, float y, float z)
+{
+	scale_mat = glm::scale(scale_mat, glm::vec3(x / x_scale, y / y_scale, z / z_scale));
+	x_scale = x, y_scale = y, z_scale = z;
+}
+
 
 
 
@@ -72,6 +78,7 @@ void Model3dGroupNode::set_from_data_node(Model3dGroupDataNode* node)
 	model.set_rotation(-node->rotation.x, AGE_ROTATE_AROUND_X); // - because OpenGL rotates object counterclock-wise
 	model.set_rotation(-node->rotation.y, AGE_ROTATE_AROUND_Y);
 	model.set_rotation(-node->rotation.z, AGE_ROTATE_AROUND_Z);
+	model.set_scale(node->scale.x, node->scale.y, node->scale.z);
 
 	childs_count = node->childs_count;
 	childs = new Model3dGroupNode[childs_count];
