@@ -15,6 +15,12 @@
 //	It turns out that Model3dGroupNode must be private class, and must
 //	be available for Model3dGroup. Therefore, the mechanism of friendly
 //	classes is used.
+// 
+// 
+// 
+//		NOTES ----------
+//			Sometimes program exits with memory error on line 77 in cpp
+//	file.
 //
 //
 //########################################################################//

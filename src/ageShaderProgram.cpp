@@ -110,5 +110,6 @@ ShaderProgram ShaderProgram::create_shader_program(const char* vert_shader_file,
 	shader_prog.shader_prog_id = create_shader_program_gl(new GLuint[2]{ vert_shader, frag_shader }, 2);
 	shader_prog.MVP_mat_loc = glGetUniformLocation(shader_prog.shader_prog_id, "MVP_matrix");
 	shader_prog.MV_mat_loc = glGetUniformLocation(shader_prog.shader_prog_id, "model_view_matrix");
+	shader_prog.M_mat_loc = glGetUniformLocation(shader_prog.shader_prog_id, "model_matrix");
 	return shader_prog;
 }
