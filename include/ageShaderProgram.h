@@ -35,11 +35,12 @@ namespace age {
 
 	class ShaderProgram
 	{
-		GLuint shader_prog_id, MVP_mat_loc, MV_mat_loc;
+		GLuint shader_prog_id, MVP_mat_loc, MV_mat_loc, M_mat_loc;
 	public:
 		GLuint get_shader_program_id() { return shader_prog_id; }
 		GLuint get_MVP_matrix_location() { return MVP_mat_loc; }
 		GLuint get_MV_matrix_location() { return MV_mat_loc; }
+		GLuint get_M_matrix_location() { return M_mat_loc; }
 
 		static ShaderProgram create_main_shader_3d_program();
 		static ShaderProgram create_main_shader_2d_program();

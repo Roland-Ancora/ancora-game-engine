@@ -16,6 +16,13 @@
 //		The Window class has GLFWwindow* operator. That's need for backward
 //	compatibillity with GLFW functions.
 // 
+// 
+// 
+// 
+//			NOTES -----------
+//				Window should contains camera object, because if window
+//	will resize, it must to changes aspects ratio of camera and other.
+// 
 //
 //##########################################################################//
 

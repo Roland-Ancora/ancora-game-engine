@@ -22,6 +22,7 @@ void Camera::set_model_matrix(glm::mat4* model_mat)
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(now_active_shader->get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 	glUniformMatrix4fv(now_active_shader->get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
+	glUniformMatrix4fv(now_active_shader->get_M_matrix_location(), 1, GL_FALSE, &(*model_matrix)[0][0]);
 }
 
 
