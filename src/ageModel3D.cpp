@@ -40,7 +40,7 @@ void Model3D::move(float x, float y, float z)
 void Model3D::set_rotation(float angle, rotate_vector vec)
 {
 	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
-	rotate_mat *= rotate_by_vector_now;
+	rotate_mat = rotate_by_vector_now;
 }
 
 void Model3D::rotate(float angle, rotate_vector vec)
@@ -112,12 +112,14 @@ void Model3D_Anim::show()
 			}
 			else {
 				now_play_time = 0.0f;
+				anim_last_node = 0;
 				anim_play = false;
 			}
 		}
 		while (anim->nodes[anim_last_node].time_val < now_play_time)
 			anim_last_node++;
-		update_anim_matrix();
+		if (anim_play)
+			update_anim_matrix();
 	}
 
 	Camera::get_active_camera()->set_model_matrix(&anim_matrix);

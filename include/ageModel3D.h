@@ -7,7 +7,7 @@
 // 
 //		This module has external dependencies: OpenGL, GLM.
 //		This module has dependencies: ageModel3dData, ageCamera, 
-//	ageAnimation3D, ageProgramClock.
+//	ageAnimation3D, ageProgramClock, age_rotate_vector.
 // 
 //		Why Model3dGroupNode is friend class for Model3dGroup? For a now,
 //	Model3dGroupNode haven't any methods to interactive with user. Also,
@@ -21,6 +21,7 @@
 
 
 
+#pragma once
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "../depends/glm/glm.hpp"
@@ -29,17 +30,11 @@
 #include "../include/ageCamera.h"
 #include "../include/ageAnimation3D.h"
 #include "../include/ageProgramClock.h"
+#include "basic_types/age_rotate_vector.h"
 
 
 
 namespace age {
-
-	typedef glm::vec3 rotate_vector;
-	const rotate_vector AGE_ROTATE_AROUND_X = glm::vec3(1, 0, 0);
-	const rotate_vector AGE_ROTATE_AROUND_Y = glm::vec3(0, 1, 0);
-	const rotate_vector AGE_ROTATE_AROUND_Z = glm::vec3(0, 0, 1);
-
-
 
 	class Model3D {
 	protected:
@@ -76,6 +71,8 @@ namespace age {
 		void animation_stop() { anim_play = false; };
 		void set_animation_loop() { is_anim_loop = true; }
 		void disable_animation_loop() { is_anim_loop = false; }
+		float get_anim_progress() { return now_play_time / anim->anim_duration; }
+		bool is_anim_play() { return anim_play; }
 	};
 
 	class Model3dGroupNode {
