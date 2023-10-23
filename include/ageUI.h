@@ -29,7 +29,7 @@ namespace age {
 		int ui_lvl = 0;
 		glm::mat4 model_mat = glm::mat4(1);
 		glm::mat4 translate_mat = glm::mat4(1), scale_mat = glm::mat4(1), rotate_mat = glm::mat4(1);
-		UIObject* parent_obj;
+		UIObject* parent_obj = 0;
 		std::vector<UIObject*> childs;
 		UIElement_aspects last_specified_ratio = WIDTH_ASPECT;
 		glm::vec3 self_model_mat__scale_history = glm::vec3(1.0f, 1.0f, 1.0f), self_model_mat__trans_history = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -89,7 +89,8 @@ namespace age {
 	public:
 		virtual void show_and_update();
 		UIImage() { UIObject(); }
-		UIImage(Texture2D* texture) { UIObject(); set_texture(texture); }
+		UIImage(UIObject* p_obj) { UIObject(); set_parent_object(p_obj); }
+		UIImage(UIObject* p_obj, Texture2D* texture) { UIObject(); set_parent_object(p_obj); set_texture(texture); }
 		void set_texture(Texture2D* tex);
 		void set_part_from_x_begin(float pc) { shown_part_from_x_begin = pc; };
 	};
@@ -121,9 +122,10 @@ namespace age {
 		virtual void set_texture(Texture2D* tex) { UIImage::set_texture(tex); }
 	public:
 		UIButton() { UIImage(); }
-		UIButton(Texture2D* tex, Texture2D* focus_tex, Texture2D* pressed_tex, Texture2D* dis_tex) 
+		UIButton(UIObject* p_obj) { UIImage(); set_parent_object(p_obj); }
+		UIButton(UIObject* p_obj, Texture2D* tex, Texture2D* focus_tex, Texture2D* pressed_tex, Texture2D* dis_tex)
 		{
-			UIImage(); set_default_texture(tex); focus_texture = focus_tex;  pressed_texture = pressed_tex;  disable_texture = dis_tex;
+			UIImage(); set_parent_object(p_obj); set_default_texture(tex); focus_texture = focus_tex;  pressed_texture = pressed_tex;  disable_texture = dis_tex;
 		}
 		void set_default_texture(Texture2D* tex) { default_texture = tex; set_texture(default_texture); }
 		void set_focus_texture(Texture2D* tex) { focus_texture = tex; }

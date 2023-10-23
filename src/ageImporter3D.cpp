@@ -108,7 +108,6 @@ void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::
 	aiVector3D pos, rot, scale;
 	node->mTransformation.Decompose(scale, rot, pos);
 	model_data_node.position = glm::vec3(pos.x, pos.y, pos.z);
-	printf("Rotation: %f %f %f\n", rot.x, rot.y, rot.z);
 	model_data_node.rotation = glm::vec3(rot.x, rot.y, rot.z);
 	model_data_node.scale = glm::vec3(scale.x, scale.y, scale.z);
 

@@ -31,6 +31,10 @@ void UIObject::set_position_x(float x)
 
 void UIObject::set_position_y(float y)
 {
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_position_y called before seting parent object\n");
+		exit(51);
+	}
 	translate_mat = glm::translate(translate_mat, glm::vec3(0.0f, y * parent_obj->aspects_ratio - origin_pos_y * parent_obj->aspects_ratio, 0.0f));
 	origin_pos_y = y;
 	is_redimensions_beforea_update = true;
@@ -38,6 +42,10 @@ void UIObject::set_position_y(float y)
 
 void UIObject::set_position(float x, float y)
 {
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_position called before seting parent object\n");
+		exit(51);
+	}
 	translate_mat = glm::translate(translate_mat, glm::vec3(x - origin_pos_x, y * parent_obj->aspects_ratio - origin_pos_y * parent_obj->aspects_ratio, 0.0f));
 	origin_pos_x = x;
 	origin_pos_y = y;
@@ -46,34 +54,44 @@ void UIObject::set_position(float x, float y)
 
 void UIObject::set_width(float w)
 {
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_width called before seting parent object\n");
+		exit(51);
+	}
 	float new_scale = w / origin_width;
-	if (last_specified_ratio != WIDTH_ASPECT && ui_lvl <= 1)
-		new_scale = w / origin_width * Camera::get_active_camera()->get_aspects_ratio();
-	else if (last_specified_ratio != WIDTH_ASPECT && ui_lvl > 1)
+	if (last_specified_ratio != WIDTH_ASPECT && ui_lvl > 1)
 		new_scale = (w / parent_obj->aspects_ratio) / origin_width;
 	scale_mat = glm::scale(scale_mat, glm::vec3(new_scale, new_scale, 1.0f));
 	origin_width = w;
-	origin_height = w * aspects_ratio * parent_obj->aspects_ratio;
+	origin_height = w * aspects_ratio / parent_obj->aspects_ratio;
 	last_specified_ratio = WIDTH_ASPECT;
 	is_redimensions_beforea_update = true;
 }
 
 void UIObject::set_height(float h)
 {
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_hieght called before seting parent object\n");
+		exit(51);
+	}
 	float new_scale = h / origin_height;
 	if (last_specified_ratio != HEIGHT_ASPECT && ui_lvl <= 1)
-		new_scale = h / origin_height / Camera::get_active_camera()->get_aspects_ratio();
+		new_scale = h / origin_height;
 	else if (last_specified_ratio != HEIGHT_ASPECT && ui_lvl > 1)
 		new_scale = (h * parent_obj->aspects_ratio) / origin_height;
 	scale_mat = glm::scale(scale_mat, glm::vec3(new_scale, new_scale, 1.0f));
 	origin_height = h;
-	origin_width = h / aspects_ratio / parent_obj->aspects_ratio;
+	origin_width = parent_obj->aspects_ratio / aspects_ratio * h;
 	last_specified_ratio = HEIGHT_ASPECT;
 	is_redimensions_beforea_update = true;
 }
 
 void UIObject::set_size(float w, float h)
 {
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_size called before seting parent object\n");
+		exit(51);
+	}
 	float new_scale = w / origin_width;
 	if (last_specified_ratio != WIDTH_ASPECT && ui_lvl <= 1)
 		new_scale = w / origin_width * Camera::get_active_camera()->get_aspects_ratio();
@@ -166,13 +184,19 @@ void UIImage::show_and_update()
 
 void UIImage::set_texture(Texture2D* tex)
 {
-	texture = tex;
-	aspects_ratio = float(tex->get_height()) / tex->get_width();
-	if (last_specified_ratio == WIDTH_ASPECT) {
-		origin_height = origin_width * aspects_ratio;
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_texture called before seting parent object\n");
+		exit(51);
 	}
+	texture = tex;
+	float prev_asp = aspects_ratio;
+	aspects_ratio = float(tex->get_height()) / tex->get_width();
+	if (last_specified_ratio == WIDTH_ASPECT)
+		origin_height = origin_width * aspects_ratio / parent_obj->get_aspects_ratio();
 	else {
-		origin_width = origin_width / aspects_ratio;
+		float scale_val = prev_asp / aspects_ratio;
+		scale_mat = glm::scale(scale_mat, glm::vec3(scale_val, scale_val, 1.0f));
+		origin_width = parent_obj->get_aspects_ratio() / aspects_ratio * origin_height;
 	}
 }
 
@@ -323,6 +347,10 @@ void UIButton::show_and_update()
 
 void UIOrganizedContainer::set_size(float w, float h)
 {
+	if (parent_obj == 0) {
+		printf("ERROR::UI: set_size called before seting parent object\n");
+		exit(51);
+	}
 	float new_scale = w / origin_width;
 	if (last_specified_ratio != WIDTH_ASPECT && ui_lvl <= 1)
 		new_scale = w / origin_width * Camera::get_active_camera()->get_aspects_ratio();

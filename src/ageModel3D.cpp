@@ -208,7 +208,6 @@ void Model3dGroupNode::set_from_data_node(Model3dGroupDataNode* node)
 {
 	model.set_model_3d_data(&node->model);
 	model.set_position(node->position.x, node->position.y, node->position.z);
-	printf("Rotation in Model3D.cpp x: %f\n", -node->rotation.x);
 	model.rotate(-node->rotation.x, AGE_ROTATE_AROUND_X);
 	model.rotate(-node->rotation.y, AGE_ROTATE_AROUND_Y);
 	model.rotate(-node->rotation.z, AGE_ROTATE_AROUND_Z);
