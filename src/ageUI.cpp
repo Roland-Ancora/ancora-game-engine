@@ -159,18 +159,47 @@ void UIImage::show_and_update()
 		model_mat = parent_obj->get_model_matrix() * (translate_mat * rotate_mat * scale_mat);
 		glm::mat4 real_mat = UIWindow::get_active_ui_window()->get_real_model_mat() * parent_obj->get_model_matrix() * (translate_mat * rotate_mat * scale_mat);
 		Camera::get_active_camera()->set_model_matrix(&real_mat);
-		glColor3f(1.0f, 1.0f, 1.0f);
+
+		float ver_pos_data[] = {
+			0.0f, 0.0f, z_var,
+			1.0f * shown_part_from_x_begin, 0.0f, z_var,
+			1.0f * shown_part_from_x_begin, aspects_ratio, z_var,
+			0.0f, aspects_ratio, z_var
+		};
+		float tex_pos_data[] = {
+			0.0f, 0.0f,
+			1.0f + (1.0f - shown_part_from_x_begin), 0.0f,
+			1.0f + (1.0f - shown_part_from_x_begin), 1.0f,
+			0.0f, 1.0f
+		};
+
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+		glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), ver_pos_data, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+		glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos_data, GL_STATIC_DRAW);
+
+		glBindVertexArray(vaoID);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
 		glBindTexture(GL_TEXTURE_2D, *texture);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f);										glVertex3f(0.0f, 0.0f, z_var);
-		glTexCoord2f(1.0f + (1.0f - shown_part_from_x_begin), 0.0f);	glVertex3f(1.0f * shown_part_from_x_begin, 0.0f, z_var);
-		glTexCoord2f(1.0f + (1.0f - shown_part_from_x_begin), 1.0f);	glVertex3f(1.0f * shown_part_from_x_begin, aspects_ratio, z_var);
-		glTexCoord2f(0.0f, 1.0f);										glVertex3f(0.0f, aspects_ratio, z_var);
-		glEnd();
+
+		glBindVertexArray(vaoID);
+		glDrawArrays(GL_QUADS, 0, 4);
+
 		glDisable(GL_BLEND);
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
 
 		glm::vec3 self_model_mat__skew_vec;
 		glm::quat self_model_mat__orient_history;
@@ -224,6 +253,36 @@ void UIText::show_and_update()
 			}
 			Camera::get_active_camera()->set_model_matrix(&real_mat);
 
+			
+			float text_data[] = {
+			(next_sym_pos + font->Characters[str[i]].Bearing.x)* font_t_size, (font_t_size + distance_between_lines)* line_num - font->Characters[str[i]].Bearing.y * font_t_size, 0.0f, 0.0f,
+			(next_sym_pos + font->Characters[str[i]].Bearing.x + font->Characters[str[i]].Size.x)* font_t_size, (font_t_size + distance_between_lines)* line_num - font->Characters[str[i]].Bearing.y * font_t_size, 1.0f, 0.0f,
+			(next_sym_pos + font->Characters[str[i]].Bearing.x + font->Characters[str[i]].Size.x)* font_t_size, (font_t_size + distance_between_lines)* line_num + (-font->Characters[str[i]].Bearing.y + font->Characters[str[i]].Size.y) * font_t_size, 1.0f, 1.0f,
+			(next_sym_pos + font->Characters[str[i]].Bearing.x)* font_t_size, (font_t_size + distance_between_lines)* line_num + (-font->Characters[str[i]].Bearing.y + font->Characters[str[i]].Size.y) * font_t_size, 0.0f, 1.0f
+			};
+			glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+			glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), text_data, GL_STATIC_DRAW);
+
+			glBindVertexArray(vaoID);
+			glEnableVertexAttribArray(0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+
+			glBindTexture(GL_TEXTURE_2D, font->Characters[str[i]].TextureID);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			glBindVertexArray(vaoID);
+			glDrawArrays(GL_QUADS, 0, 4);
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+			glDisableVertexAttribArray(0);
+			glDisable(GL_BLEND);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			/*
 			glColor3f(1.0f, 1.0f, 1.0f);
 			glBindTexture(GL_TEXTURE_2D, font->Characters[str[i]].TextureID);
 			glEnable(GL_BLEND);
@@ -235,7 +294,7 @@ void UIText::show_and_update()
 			glTexCoord2f(0.0f, 1.0f);	glVertex3f((next_sym_pos + font->Characters[str[i]].Bearing.x) * font_t_size, (font_t_size + distance_between_lines) * line_num + (-font->Characters[str[i]].Bearing.y + font->Characters[str[i]].Size.y) * font_t_size, -1.0f);
 			glEnd();
 			glDisable(GL_BLEND);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);*/
 
 			next_sym_pos += font->Characters[str[i]].Advance;
 		}

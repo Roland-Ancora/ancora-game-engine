@@ -86,11 +86,13 @@ namespace age {
 	protected:
 		Texture2D* texture = &default_unvis_texture;
 		float shown_part_from_x_begin = 1.0f;
+		GLuint vboIDs[2];
+		GLuint vaoID;
 	public:
 		virtual void show_and_update();
-		UIImage() { UIObject(); }
-		UIImage(UIObject* p_obj) { UIObject(); set_parent_object(p_obj); }
-		UIImage(UIObject* p_obj, Texture2D* texture) { UIObject(); set_parent_object(p_obj); set_texture(texture); }
+		UIImage() { UIObject(); glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
+		UIImage(UIObject* p_obj) { UIObject(); set_parent_object(p_obj); glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
+		UIImage(UIObject* p_obj, Texture2D* texture) { UIObject(); set_parent_object(p_obj); set_texture(texture); glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
 		void set_texture(Texture2D* tex);
 		void set_part_from_x_begin(float pc) { shown_part_from_x_begin = pc; };
 	};
@@ -100,11 +102,13 @@ namespace age {
 		float font_t_size = 0.1f, distance_between_lines = font_t_size / 2;
 		std::vector<int> str_eds_symbol_nums;
 		Font* font;
+		GLuint vboIDs[2];
+		GLuint vaoID;
 		void calculate_str_end_symbol_nums();
 		void calculate_str_end_symbol_nums_w_words();
 		bool is_next_word_bigger_then_width(int char_start_word, float now_str_width);
 	public:
-		UIText() { }
+		UIText() { glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
 		virtual void show_and_update();
 		void set_font(Font* f) { font = f; }
 		void set_font_size(float size) { font_t_size = size; distance_between_lines = font_t_size / 2; calculate_str_end_symbol_nums_w_words(); }
