@@ -68,7 +68,7 @@ void UIButton3D::show()
 	if (is_active) {
 		UIImage3D::show();
 
-		if (is_active) {
+		if (is_btn_active) {
 			double* mouse_pos_in_wodtd = get_click_position_in_world_coords(*Window::get_active_window(), *Camera3D::get_active_3d_camera());
 
 			
@@ -88,10 +88,6 @@ void UIButton3D::show()
 			}
 			else
 				img_texture = default_texture;
-			//if (is_redimensions_beforea_update) {
-				//is_redimensions_beforea_update = false;
-			//if (is_btn_pressed)
-			//	is_btn_pressed = false;
 		}
 		else
 			is_btn_pressed = false;
