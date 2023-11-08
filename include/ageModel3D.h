@@ -49,7 +49,10 @@ namespace age {
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
+		GLuint vboIDs[4];
+		GLuint vaoID;
 	public:
+		Model3D() { glGenBuffers(4, vboIDs); glGenVertexArrays(1, &vaoID); }
 		void set_model_3d_data(Model3dData* model_3d_data) { model_data = model_3d_data; }
 		void show();
 		void set_position(float x, float y, float z);
@@ -81,6 +84,7 @@ namespace age {
 
 		void update_anim_matrix();
 	public:
+		Model3D_Anim() { Model3D(); }
 		virtual void show();
 		void set_animation(Animation3D* animation_data) { anim = animation_data; };
 		void animation_play() { anim_play = true; };
