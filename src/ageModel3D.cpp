@@ -41,12 +41,11 @@ void Model3D::show()
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
 
-	// Draw the triangles !
 	glDrawElements(
-		GL_TRIANGLES,      // mode
-		model_data->indices_cnt,    // count
-		GL_UNSIGNED_INT,   // type
-		(void*)0           // element array buffer offset
+		GL_TRIANGLES,
+		model_data->indices_cnt,
+		GL_UNSIGNED_INT,
+		(void*)0
 	);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -56,20 +55,6 @@ void Model3D::show()
 	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	/*
-	glBindTexture(GL_TEXTURE_2D, model_data->diffuse_texture);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, model_data->vertices);
-	glNormalPointer(GL_FLOAT, 0, model_data->normals);
-	glTexCoordPointer(2, GL_FLOAT, 0, model_data->texture_coords);
-	glDrawElements(GL_TRIANGLES, model_data->indices_cnt, GL_UNSIGNED_INT, model_data->indices);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, 0);*/
 }
 
 void Model3D::set_position(float x, float y, float z)
@@ -200,12 +185,11 @@ void Model3D_Anim::show()
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
 
-	// Draw the triangles !
 	glDrawElements(
-		GL_TRIANGLES,      // mode
-		model_data->indices_cnt,    // count
-		GL_UNSIGNED_INT,   // type
-		(void*)0           // element array buffer offset
+		GL_TRIANGLES,
+		model_data->indices_cnt,
+		GL_UNSIGNED_INT,
+		(void*)0
 	);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -215,21 +199,6 @@ void Model3D_Anim::show()
 	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	/*
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glBindTexture(GL_TEXTURE_2D, model_data->diffuse_texture);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, model_data->vertices);
-	glNormalPointer(GL_FLOAT, 0, model_data->normals);
-	glTexCoordPointer(2, GL_FLOAT, 0, model_data->texture_coords);
-	glDrawElements(GL_TRIANGLES, model_data->indices_cnt, GL_UNSIGNED_INT, model_data->indices);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, 0);*/
 
 	for (int i = 0; i < childs.size(); i++)
 		childs[i]->show_child(anim_matrix);
@@ -264,25 +233,50 @@ void Model3D_Anim__childs::show_child(glm::mat4 parent_mat)
 			update_anim_matrix();
 	}
 
-	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
-	glColor3f(1.0f, 1.0f, 1.0f);
+	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
+	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glBufferData(GL_ARRAY_BUFFER, model_data->texture_coords_cnt * sizeof(float), model_data->texture_coords, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+	glBufferData(GL_ARRAY_BUFFER, model_data->normals_cnt * sizeof(float), model_data->normals, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_data->indices_cnt * sizeof(unsigned int), model_data->indices, GL_STATIC_DRAW);
+
+	glBindVertexArray(vaoID);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
 	glBindTexture(GL_TEXTURE_2D, model_data->diffuse_texture);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, model_data->vertices);
-	glNormalPointer(GL_FLOAT, 0, model_data->normals);
-	glTexCoordPointer(2, GL_FLOAT, 0, model_data->texture_coords);
-	glDrawElements(GL_TRIANGLES, model_data->indices_cnt, GL_UNSIGNED_INT, model_data->indices);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
+
+	glDrawElements(
+		GL_TRIANGLES,
+		model_data->indices_cnt,
+		GL_UNSIGNED_INT,
+		(void*)0
+	);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
-
-//////// TEST END
-
-
 
 
 

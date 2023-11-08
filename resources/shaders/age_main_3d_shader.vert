@@ -28,7 +28,6 @@ void main()
 	vec3 s = normalize(vec3(global_light_pos - vec4(vert_position, 1.0f)));
 	light_intensity = global_light_color * max(dot(s, normal), 0.0f) + global_light_min_color;
 
-	//gl_TexCoord[0]=gl_MultiTexCoord0;
 	TexturePos = VertexTexPos;
 	gl_Position = MVP_matrix * vec4(VertexPos.x, VertexPos.y, VertexPos.z, 1.0f);
 }

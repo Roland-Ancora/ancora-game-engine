@@ -282,20 +282,6 @@ void UIText::show_and_update()
 			glDisable(GL_BLEND);
 			glBindTexture(GL_TEXTURE_2D, 0);
 
-			/*
-			glColor3f(1.0f, 1.0f, 1.0f);
-			glBindTexture(GL_TEXTURE_2D, font->Characters[str[i]].TextureID);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glBegin(GL_QUADS);
-			glTexCoord2f(0.0f, 0.0f);	glVertex3f((next_sym_pos + font->Characters[str[i]].Bearing.x) * font_t_size, (font_t_size + distance_between_lines) * line_num - font->Characters[str[i]].Bearing.y * font_t_size, -1.0f);
-			glTexCoord2f(1.0f, 0.0f);	glVertex3f((next_sym_pos + font->Characters[str[i]].Bearing.x + font->Characters[str[i]].Size.x) * font_t_size, (font_t_size + distance_between_lines) * line_num - font->Characters[str[i]].Bearing.y * font_t_size, -1.0f);
-			glTexCoord2f(1.0f, 1.0f);	glVertex3f((next_sym_pos + font->Characters[str[i]].Bearing.x + font->Characters[str[i]].Size.x) * font_t_size, (font_t_size + distance_between_lines) * line_num + (-font->Characters[str[i]].Bearing.y + font->Characters[str[i]].Size.y) * font_t_size, -1.0f);
-			glTexCoord2f(0.0f, 1.0f);	glVertex3f((next_sym_pos + font->Characters[str[i]].Bearing.x) * font_t_size, (font_t_size + distance_between_lines) * line_num + (-font->Characters[str[i]].Bearing.y + font->Characters[str[i]].Size.y) * font_t_size, -1.0f);
-			glEnd();
-			glDisable(GL_BLEND);
-			glBindTexture(GL_TEXTURE_2D, 0);*/
-
 			next_sym_pos += font->Characters[str[i]].Advance;
 		}
 

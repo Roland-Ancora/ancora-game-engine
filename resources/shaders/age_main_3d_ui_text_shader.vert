@@ -15,7 +15,6 @@ out vec2 TexPos;
 
 void main()
 {
-    //gl_TexCoord[0]=gl_MultiTexCoord0;
     TexPos = TextData.zw;
     gl_Position = MVP_matrix * vec4(TextData.xy, -1.0, 1.0);
 }

@@ -17,7 +17,6 @@ out vec2 TexturePos;
 void main()
 {
 	Color = vec3(1.0, 1.0, 1.0);
-	//gl_TexCoord[0]=gl_MultiTexCoord0;
 	TexturePos = VertexTexturePos;
 	gl_Position = MVP_matrix * vec4(VertexPos.x, VertexPos.y, VertexPos.z, 1.0f);
 }
