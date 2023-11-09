@@ -10,18 +10,62 @@ void UIImage3D::show()
 {
 	finally_mat = translate_mat * rotate_mat * scale_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);
-	glColor3f(1.0f, 1.0f, 1.0f);
+
+	float vert_pos[] = {
+		0.0f, height, 0.0f,
+		width * shown_part_from_x_begin, height, 0.0f,
+		width * shown_part_from_x_begin, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f
+	};
+	float tex_pos[] = {
+		0.0f, 0.0f,
+		1.0f + (1.0f - shown_part_from_x_begin), 0.0f,
+		1.0f + (1.0f - shown_part_from_x_begin), 1.0f,
+		0.0f, 1.0f
+	};
+	float vert_normals[] = {
+		0.0f, height, -1.0f,
+		width, height, -1.0f,
+		width, 0.0f, -1.0f,
+		0.0f, 0.0f, -1.0f
+	};
+
+	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
+	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert_pos, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert_normals, GL_STATIC_DRAW);
+
+	glBindVertexArray(vaoID);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
 	glBindTexture(GL_TEXTURE_2D, *img_texture);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBegin(GL_QUADS);
-		glNormal3f(0.0f, height, -1.0f); glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, height, 0.0f);
-		glNormal3f(width, height, -1.0f); glTexCoord2f(1.0f + (1.0f - shown_part_from_x_begin), 0.0f); glVertex3f(width * shown_part_from_x_begin, height, 0.0f);
-		glNormal3f(width, 0.0f, -1.0f); glTexCoord2f(1.0f + (1.0f - shown_part_from_x_begin), 1.0f); glVertex3f(width * shown_part_from_x_begin, 0.0f, 0.0f);
-		glNormal3f(0.0f, 0.0f, -1.0f); glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 0.0f);
-	glEnd();
+
+	glBindVertexArray(vaoID);
+	glDrawArrays(GL_QUADS, 0, 4);
+
 	glDisable(GL_BLEND);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 }
 
 void UIImage3D::set_texture(Texture2D* texture)

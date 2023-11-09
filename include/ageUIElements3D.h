@@ -47,7 +47,10 @@ namespace age {
 	class UIImage3D : public UIElement3D {
 	protected:
 		Texture2D* img_texture;
+		GLuint vboIDs[3];
+		GLuint vaoID;
 	public:
+		UIImage3D() { glGenBuffers(3, vboIDs); glGenVertexArrays(1, &vaoID); }
 		virtual void show();
 		void set_texture(Texture2D* texture);
 		void set_size(float w, float h);
