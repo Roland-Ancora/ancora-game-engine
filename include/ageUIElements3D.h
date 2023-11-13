@@ -38,10 +38,13 @@ namespace age {
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
 		float shown_part_from_x_begin = 1.0f;
 		glm::mat4 finally_mat = glm::mat4(1);
+		bool camera_follow = false;
 	public:
 		virtual void show() {};
 		void disable() { is_active = false; }
 		void enable() { is_active = true; }
+		void enable_camera_follow() { camera_follow = true; }
+		void disable_camera_follow() { camera_follow = false; }
 	};
 
 	class UIImage3D : public UIElement3D {

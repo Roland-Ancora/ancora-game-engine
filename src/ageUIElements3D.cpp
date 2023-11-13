@@ -8,14 +8,17 @@ using namespace age;
 
 void UIImage3D::show()
 {
+	if (camera_follow)
+		set_rotation(Camera3D::get_active_3d_camera()->get_rotation().x, AGE_ROTATE_AROUND_Y);
+
 	finally_mat = translate_mat * rotate_mat * scale_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);
 
 	float vert_pos[] = {
-		0.0f, height, 0.0f,
-		width * shown_part_from_x_begin, height, 0.0f,
-		width * shown_part_from_x_begin, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f
+		-(width * shown_part_from_x_begin / 2), height / 2, 0.0f,
+		width * shown_part_from_x_begin / 2, height / 2, 0.0f,
+		width * shown_part_from_x_begin / 2, -(height / 2), 0.0f,
+		-(width * shown_part_from_x_begin / 2), -(height / 2), 0.0f
 	};
 	float tex_pos[] = {
 		0.0f, 0.0f,
