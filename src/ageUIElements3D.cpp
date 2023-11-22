@@ -100,11 +100,39 @@ void UIImage3D::set_rotation(float angle, rotate_vector vec)
 {
 	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
 	rotate_mat = rotate_by_vector_now;
+	if (middle_rotate_point_active) {
+		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
+		rotate_mat = rotate_mat * transl_aft_rot;
+	}
 }
 
 void UIImage3D::rotate(float angle, rotate_vector vec)
 {
 	rotate_mat = glm::rotate(rotate_mat, angle, vec);
+	if (middle_rotate_point_active) {
+		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
+		rotate_mat = rotate_mat * transl_aft_rot;
+	}
+}
+
+void UIImage3D::use_middle_rotate_point(float arm)
+{
+	middle_rotate_point_active = true;
+	rotate_arm = arm;
+	glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
+	rotate_mat = rotate_mat * transl_aft_rot;
+}
+
+void UIImage3D::disable_middle_rotate_point()
+{
+	middle_rotate_point_active = false;
+	rotate_mat = rotate_mat * glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, -rotate_arm));
+}
+
+void UIImage3D::set_arm(float arm)
+{
+	rotate_mat = rotate_mat * glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, arm - rotate_arm));
+	rotate_arm = arm;
 }
 
 

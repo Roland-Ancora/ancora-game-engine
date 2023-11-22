@@ -52,6 +52,8 @@ namespace age {
 		Texture2D* img_texture;
 		GLuint vboIDs[3];
 		GLuint vaoID;
+		bool middle_rotate_point_active = false;
+		float rotate_arm = 1.0f;
 	public:
 		UIImage3D() { glGenBuffers(3, vboIDs); glGenVertexArrays(1, &vaoID); }
 		virtual void show();
@@ -63,6 +65,9 @@ namespace age {
 		void rotate(float angle, rotate_vector vec);
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		void set_part_from_x_begin(float pc) { shown_part_from_x_begin = pc; };
+		void use_middle_rotate_point(float arm = 1.0f);
+		void disable_middle_rotate_point();
+		void set_arm(float arm);
 	};
 
 	class UIButton3D : public UIImage3D {
