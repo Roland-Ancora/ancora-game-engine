@@ -357,7 +357,7 @@ void UIButton::show_and_update()
 	if (is_active) {
 		UIImage::show_and_update();
 
-		if (is_active) {
+		if (is_btn_active) {
 			double mouse_pos_x, mouse_pos_y;
 			glfwGetCursorPos(*Window::get_active_window(), &mouse_pos_x, &mouse_pos_y);
 			mouse_pos_x /= Window::get_active_window()->get_width();
