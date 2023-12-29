@@ -233,6 +233,8 @@ void Model3D_Anim__childs::show_child(glm::mat4 parent_mat)
 			update_anim_matrix();
 	}
 
+	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
+
 	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
 	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
 
