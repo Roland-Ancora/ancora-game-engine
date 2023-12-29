@@ -12,4 +12,5 @@ assimp-vc143-mt.dll
 glew32.dll
 glfw3.dll
 freetype.dll
+audiere.dll
 depends/
