@@ -59,7 +59,12 @@ Camera2D::Camera2D()
 	main_shader_prog = ShaderProgram::create_main_shader_2d_program();
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	glUseProgram(main_shader_prog.get_shader_program_id());
-	view_matrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera2D::calculate_and_use_MVP_matrices()
+{
+	view_matrix = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, -1.0f), vector_up);
 	MV_matrix = view_matrix * *model_matrix;
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
@@ -82,6 +87,53 @@ void Camera2D::set_aspects_ratio(float x, float y)
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
+}
+
+void Camera2D::set_fov(float new_fov)
+{
+	fov = new_fov;
+	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
+	MVP_matrix = projection_matrix * MV_matrix;
+	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
+	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
+}
+
+void Camera2D::move(float x, float y)
+{
+	position.x += x;
+	position.y += y;
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera2D::move_x(float x)
+{
+	position.x += x;
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera2D::move_y(float y)
+{
+	position.y += y;
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera2D::set_position(float x, float y)
+{
+	position.x += x - position.x;
+	position.y += y - position.y;
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera2D::set_position_x(float x)
+{
+	position.x += x - position.x;
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera2D::set_position_y(float y)
+{
+	position.y += y - position.y;
+	calculate_and_use_MVP_matrices();
 }
 
 

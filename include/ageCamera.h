@@ -78,12 +78,23 @@ namespace age {
 
 	class Camera2D : public Camera {
 		float fov = 15.0f, z_near = 0.01f, z_far = 1.0f;
+		glm::vec3 vector_up = glm::vec3(0.0f, 1.0f, 0.0f);
+		float rotate_angle = glm::radians(90.0f); // by radians
 		static Camera2D* active_2d_camera;
+		void calculate_and_use_MVP_matrices();
 	public:
 		Camera2D();
+		static Camera2D* get_active_2d_camera() { return active_2d_camera; }
+		float get_fov() { return fov; }
 		virtual void clear_buffers();
 		virtual void set_aspects_ratio(float x, float y);
-		static Camera2D* get_active_2d_camera() { return active_2d_camera; }
+		void set_fov(float new_fov);
+		void move(float x, float y);
+		void move_x(float x);
+		void move_y(float y);
+		void set_position(float x, float y);
+		void set_position_x(float x);
+		void set_position_y(float y);
 	};
 
 
