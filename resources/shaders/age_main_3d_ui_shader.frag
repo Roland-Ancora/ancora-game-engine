@@ -1,14 +1,12 @@
 #version 430
 
 
+uniform sampler2D main_texture_id;
+
 in vec3 Color;
 in vec2 TexturePos;
 
 out vec4 FragColor;
-
-
-
-uniform sampler2D main_texture_id;
 
 
 

@@ -1,15 +1,13 @@
 #version 430
 
 
+uniform sampler2D main_texture_id;
+uniform vec3 object_color;
+
 in vec2 TexturePos;
 in vec3 light_intensity;
 
 out vec4 FragColor;
-
-
-
-uniform sampler2D main_texture_id;
-uniform vec3 object_color;
 
 
 

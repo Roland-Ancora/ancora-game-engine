@@ -3,11 +3,9 @@
 
 layout (location=0) in vec4 TextData;
 
-
 uniform mat4 MVP_matrix;
 uniform mat4 model_view_matrix;
 uniform mat4 model_matrix;
-
 
 out vec2 TexPos;
 

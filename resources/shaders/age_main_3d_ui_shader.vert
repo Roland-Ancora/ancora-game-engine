@@ -4,7 +4,6 @@
 layout (location=0) in vec3 VertexPos;
 layout (location=1) in vec2 VertexTexturePos;
 
-
 uniform mat4 MVP_matrix;
 uniform mat4 model_view_matrix;
 uniform mat4 model_matrix;
