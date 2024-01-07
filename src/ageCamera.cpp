@@ -51,6 +51,21 @@ void Camera::use_main_shader()
 
 
 
+Camera2D* Camera2D::active_2d_camera = 0;
+
+Camera2D::Camera2D()
+{
+	active_2d_camera = this;
+	main_shader_prog = ShaderProgram::create_main_shader_2d_program();
+	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
+	glUseProgram(main_shader_prog.get_shader_program_id());
+	view_matrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	MV_matrix = view_matrix * *model_matrix;
+	MVP_matrix = projection_matrix * MV_matrix;
+	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
+	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
+}
+
 // Clears color buffer. Called every frame.
 void Camera2D::clear_buffers()
 {
@@ -63,10 +78,7 @@ void Camera2D::clear_buffers()
 void Camera2D::set_aspects_ratio(float x, float y)
 {
 	aspects_ratio = x / y;
-	projection_matrix = glm::ortho(-aspects_ratio / 2 * fov,
-		aspects_ratio / 2 * fov,
-		-0.5f * fov, 0.5f * fov,
-		z_near, z_far);
+	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);

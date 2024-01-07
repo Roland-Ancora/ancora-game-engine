@@ -22,12 +22,6 @@
 //	require for a Model3D objects, for a send model matrix to the
 //	camera (because Camera controls shaders program). Also, in future
 //	this mechanism allows create control over a few camers.
-// 
-// 
-// 
-// 
-//		NOTES ---
-//			2D Camera not created.
 //
 //
 //#####################################################################//
@@ -61,7 +55,7 @@ namespace age {
 		ShaderProgram* now_active_shader = &main_shader_prog;
 		glm::mat4 projection_matrix, view_matrix, MVP_matrix, MV_matrix;
 		glm::mat4* model_matrix = &ident_mat;
-		float aspects_ratio = 1.0f;
+		float aspects_ratio = 1.0f; // it's width to height ratio
 		static glm::mat4 ident_mat;
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 	public:
@@ -84,10 +78,12 @@ namespace age {
 
 	class Camera2D : public Camera {
 		float fov = 15.0f, z_near = 0.01f, z_far = 1.0f;
+		static Camera2D* active_2d_camera;
 	public:
 		Camera2D();
 		virtual void clear_buffers();
 		virtual void set_aspects_ratio(float x, float y);
+		static Camera2D* get_active_2d_camera() { return active_2d_camera; }
 	};
 
 
