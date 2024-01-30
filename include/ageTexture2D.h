@@ -26,6 +26,10 @@
 
 namespace age {
 
+	typedef GLint texture_filter;
+	const texture_filter AGE_GL_NEAREST = GL_NEAREST;
+	const texture_filter AGE_GL_LINEAR = GL_LINEAR;
+
 	class Texture2D {
 		GLuint texture_id;
 		int texture_width, texture_height;
@@ -33,7 +37,9 @@ namespace age {
 		~Texture2D();
 		Texture2D() {};
 		Texture2D(const char* file_name) { load_from_file(file_name); }
+		Texture2D(const char* file_name, texture_filter filter) { load_from_file(file_name, filter); }
 		int load_from_file(const char* file_name);
+		int load_from_file(const char* file_name, texture_filter filter);
 		int get_width() { return texture_width; }
 		int get_height() { return texture_height; }
 		operator GLuint () const { return texture_id; }
