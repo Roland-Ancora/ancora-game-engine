@@ -23,7 +23,6 @@ void Camera::set_model_matrix(glm::mat4* model_mat)
 	MV_matrix = view_matrix * *model_matrix;
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(now_active_shader->get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(now_active_shader->get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 	glUniformMatrix4fv(now_active_shader->get_M_matrix_location(), 1, GL_FALSE, &(*model_matrix)[0][0]);
 }
 
@@ -33,7 +32,6 @@ void Camera::use_shader(ShaderProgram* shader_prog)
 	now_active_shader = shader_prog;
 	glUseProgram(now_active_shader->get_shader_program_id());
 	glUniformMatrix4fv(now_active_shader->get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(now_active_shader->get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 	glUniformMatrix4fv(now_active_shader->get_M_matrix_location(), 1, GL_FALSE, &(*model_matrix)[0][0]);
 }
 
@@ -42,9 +40,6 @@ void Camera::use_main_shader()
 {
 	now_active_shader = &main_shader_prog;
 	glUseProgram(now_active_shader->get_shader_program_id());
-	glUniformMatrix4fv(now_active_shader->get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(now_active_shader->get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
-	glUniformMatrix4fv(now_active_shader->get_M_matrix_location(), 1, GL_FALSE, &(*model_matrix)[0][0]);
 }
 
 
@@ -68,7 +63,6 @@ void Camera2D::calculate_and_use_MVP_matrices()
 	MV_matrix = view_matrix * *model_matrix;
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 }
 
 // Clears color buffer. Called every frame.
@@ -86,7 +80,6 @@ void Camera2D::set_aspects_ratio(float x, float y)
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 }
 
 void Camera2D::set_fov(float new_fov)
@@ -95,7 +88,6 @@ void Camera2D::set_fov(float new_fov)
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 }
 
 void Camera2D::move(float x, float y)
@@ -160,7 +152,6 @@ void Camera3D::calculate_and_use_MVP_matrices()
 	MV_matrix = view_matrix * *model_matrix;
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 }
 
 void Camera3D::calculate_rotation_from_radians()
@@ -187,7 +178,6 @@ void Camera3D::set_aspects_ratio(float x, float y)
 										ortho_z_near, ortho_z_far);
 	MVP_matrix = projection_matrix * MV_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
-	glUniformMatrix4fv(main_shader_prog.get_MV_matrix_location(), 1, GL_FALSE, &MV_matrix[0][0]);
 }
 
 void Camera3D::set_position(float x, float y, float z)
