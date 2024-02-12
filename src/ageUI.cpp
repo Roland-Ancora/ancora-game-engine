@@ -218,6 +218,8 @@ void UIText::show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui)
 {
 	if (is_active) {
 		Camera::get_active_camera()->use_shader(&font->text_sh_program);
+		GLuint shader_z_var_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "z_val");
+		glUniform1f(shader_z_var_loc, z_var);
 
 		model_mat_in_ui = m_mat_ui * (translate_mat * rotate_mat * scale_mat);
 		global_model_mat = m_mat * (translate_mat * rotate_mat * scale_mat);
@@ -326,6 +328,11 @@ bool UIText::is_next_word_bigger_then_width(int char_start_word, float now_str_w
 	return false;
 }
 
+void UIText::set_z_val(float z)
+{
+	z_var = z;
+}
+
 void UIText::set_string(std::string string)
 {
 	str = string;
@@ -396,4 +403,16 @@ void UIContainer::show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui)
 		for (int i = 0; i < childs.size(); i++)
 			childs[i]->show_and_update(global_model_mat, model_mat_in_ui);
 	}
+}
+
+// IT'S NAY BE WRONG REALIZATION. MUST BE TESTED
+void UIContainer::set_size(float w, float h)
+{
+	float new_scale_w = w / width;
+	float new_scale_h = h / height;
+	height = h;
+	width = w;
+	scale_mat = glm::scale(scale_mat, glm::vec3(new_scale_w, new_scale_w, 1.0f));
+	real_height = height * parent_obj->get_aspects_ratio();
+	aspects_ratio = real_height / width;
 }

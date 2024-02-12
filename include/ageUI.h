@@ -20,6 +20,7 @@ namespace age {
 		float width = 1.0f, height = 1.0f;
 		float real_height = 1.0f;
 		float pos_x = 0.0f, pos_y = 0.0f;
+		float z_var = -1.0f;
 		float aspects_ratio = 1.0f; // it's height to width ratio (width / height) in global coordinate system
 		glm::mat4 global_model_mat = glm::mat4(1); // model matrix with UIWindow matrix
 		glm::mat4 model_mat_in_ui = glm::mat4(1); // model matrix without UIWindow matrix, it's need for UIButton and mouse position
@@ -35,7 +36,8 @@ namespace age {
 		void set_position(float x, float y);
 		void set_width(float w);
 		void set_height(float h);
-		void set_size(float w, float h); // vitrual in UI1  // NOT REALIZED
+		virtual void set_z_val(float z) { z_var = z; }
+		virtual void set_size(float w, float h) {} // vitrual in UI1  // NOT REALIZED
 		float get_position_x() { return pos_x; }
 		float get_position_y() { return pos_y; }
 		float get_width() { return width; }
@@ -64,7 +66,6 @@ namespace age {
 	protected:
 		Texture2D* texture = 0;
 		float shown_part_from_x_l = 1.0f;
-		float z_var = -1.0f;
 		GLuint vboIDs[2];
 		GLuint vaoID;
 		float ver_pos_data[12] = {
@@ -85,7 +86,8 @@ namespace age {
 		UIImage(UIObject* p_obj, Texture2D* texture) { UIImage(); set_parent_object(p_obj); set_texture(texture); }
 		virtual void show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui);
 		void set_texture(Texture2D* tex);
-		void set_z_val(float z);
+		virtual void set_z_val(float z);
+		virtual void set_size(float w, float h) {} // MUST BE REALIZED
 		void set_part_from_x_begin(float pc);
 		float get_part_from_x_begin() { return shown_part_from_x_l; }
 		float get_z_val() { return z_var; }
@@ -95,7 +97,6 @@ namespace age {
 		Texture2D* default_texture, * focus_texture, * pressed_texture, * disable_texture;
 		bool is_btn_active = true;
 		bool is_btn_pressed = false;
-		//bool is_btn_pressed = false, is_btn_pressed_next_frame = false;
 	public:
 		UIButton() { UIImage(); }
 		UIButton(UIObject* p_obj) { UIImage(); set_parent_object(p_obj); }
@@ -124,6 +125,8 @@ namespace age {
 	public:
 		UIText() { glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
 		virtual void show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui);
+		virtual void set_z_val(float z); // MUST BE REALIZED
+		virtual void set_size(float w, float h) {} // DOESN'T MAKE SENSE
 		void set_font(Font* f) { font = f; }
 		void set_font_size(float size) { font_t_size = size; distance_between_lines = font_t_size / 2; calculate_str_end_symbol_nums_w_words(); }
 		void set_string(std::string string);
@@ -135,6 +138,7 @@ namespace age {
 		float aspect_real_ratio = 1.0f;
 	public:
 		virtual void set_size(float w, float h);
+		virtual void set_z_val(float z) {} // MUST BE REALIZED
 		void update_childs();
 		virtual void show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui);
 	};
@@ -142,6 +146,8 @@ namespace age {
 	class UIContainer : public UIObject {
 	public:
 		virtual void show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui);
+		virtual void set_z_val(float z) {} // MUST BE REALIZED
+		virtual void set_size(float w, float h);
 	};
 
 }
