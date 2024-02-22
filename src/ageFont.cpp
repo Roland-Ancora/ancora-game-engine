@@ -6,6 +6,13 @@ using namespace age;
 
 
 
+ShaderProgram Font::font_sh_prog;
+
+void Font::Init()
+{
+    font_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_UI_TEXT_VERTEX_SHADER, AGE_DEFAULT_3D_UI_TEXT_FRAGMENT_SHADER);
+}
+
 Font::Font(const char* file_name)
 {
     load_font(file_name);
@@ -19,8 +26,6 @@ void Font::load_font(const char* file_name)
     if (FT_New_Face(library, file_name, 0, &font_face))
         printf("Error with load font\n");
     FT_Set_Pixel_Sizes(font_face, 0, font_size);
-
-    text_sh_program = ShaderProgram::create_shader_program("resources/shaders/age_main_3d_ui_text_shader.vert", "resources/shaders/age_main_3d_ui_text_shader.frag");
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
@@ -60,6 +65,5 @@ void Font::load_font(const char* file_name)
             (font_face->glyph->advance.x >> 6) / font_size
         };
         Characters.insert(std::pair<GLchar, Character>(c, character));
-        // Characters[c] = character;
     }
 }

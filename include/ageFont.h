@@ -2,11 +2,12 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include <map>
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
-#include "ageShaderProgram.h"
-#include "../depends/glm/glm.hpp"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <../depends/glm/glm.hpp>
 
+#include "ageShaderProgram.h"
+#include "ageCONSTANTS.h"
 
 
 
@@ -21,13 +22,14 @@ namespace age {
 
 
 
-
 	class Font {
 		FT_Library library;
 		FT_Face font_face;
+		static ShaderProgram font_sh_prog;
 	public:
-        std::map<GLchar, Character> Characters;
-        ShaderProgram text_sh_program;
+		std::map<GLchar, Character> Characters;
+		static void Init();
+		static ShaderProgram* get_shader_program() { return &font_sh_prog; }
 		Font(const char* file_name);
 		Font() {}
 		void load_font(const char* file_name);

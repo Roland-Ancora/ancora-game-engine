@@ -217,7 +217,7 @@ void UIButton::show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui)
 void UIText::show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui)
 {
 	if (is_active) {
-		Camera::get_active_camera()->use_shader(&font->text_sh_program);
+		Camera::get_active_camera()->use_shader(Font::get_shader_program());
 		GLuint shader_z_var_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "z_val");
 		glUniform1f(shader_z_var_loc, z_var);
 

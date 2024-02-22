@@ -18,5 +18,7 @@ namespace age {
 	const char AGE_DEFAULT_3D_DEPTH_MAP_FRAGMENT_SHADER[] = "./resources/shaders/age_main_3d_depth_map_shader.frag";
 	const char AGE_DEFAULT_3D_UI3D_VERTEX_SHADER[] = "./resources/shaders/age_main_3d_ui3d_shader.vert";
 	const char AGE_DEFAULT_3D_UI3D_FRAGMENT_SHADER[] = "./resources/shaders/age_main_3d_ui3d_shader.frag";
+	const char AGE_DEFAULT_3D_UI_TEXT_VERTEX_SHADER[] = "resources/shaders/age_main_3d_ui_text_shader.vert";
+	const char AGE_DEFAULT_3D_UI_TEXT_FRAGMENT_SHADER[] = "resources/shaders/age_main_3d_ui_text_shader.frag";
 
 }
