@@ -19,8 +19,8 @@
 
 
 #pragma once
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 
 
@@ -32,16 +32,18 @@ namespace age {
 
 	class Texture2D {
 		GLuint texture_id;
+		GLubyte* img = 0;
 		int texture_width, texture_height;
 	public:
 		~Texture2D();
-		Texture2D() {};
-		Texture2D(const char* file_name) { load_from_file(file_name); }
-		Texture2D(const char* file_name, texture_filter filter) { load_from_file(file_name, filter); }
-		int load_from_file(const char* file_name);
-		int load_from_file(const char* file_name, texture_filter filter);
+		Texture2D() {}
+		Texture2D(const char* file_name, texture_filter filter = AGE_GL_NEAREST) { load_from_file(file_name, filter); }
+
 		int get_width() { return texture_width; }
 		int get_height() { return texture_height; }
+
+		int load_from_file(const char* file_name, texture_filter filter = AGE_GL_NEAREST);
+
 		operator GLuint () const { return texture_id; }
 	};
 

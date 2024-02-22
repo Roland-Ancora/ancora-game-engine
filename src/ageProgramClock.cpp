@@ -2,6 +2,10 @@
 
 
 
+using namespace age;
+
+
+
 double ProgramClock::all_program_time = 0.0f;
 double ProgramClock::eleapsed_time_since_last_frame = 0.0f;
 clock_t ProgramClock::point_time_val;

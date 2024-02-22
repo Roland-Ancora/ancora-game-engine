@@ -17,14 +17,19 @@
 
 
 
-class ProgramClock {
-	ProgramClock();
-	static double all_program_time;
-	static double eleapsed_time_since_last_frame;
-	static clock_t point_time_val;
-public:
-	static void init();
-	static void update();
-	static double get_all_program_time() { return ProgramClock::all_program_time; }
-	static double get_eleapsed_frame_time() { return ProgramClock::eleapsed_time_since_last_frame; }
-};
+namespace age {
+
+	class ProgramClock {
+		ProgramClock();
+		static double all_program_time;
+		static double eleapsed_time_since_last_frame;
+		static clock_t point_time_val;
+	public:
+		static double get_all_program_time() { return ProgramClock::all_program_time; }
+		static double get_eleapsed_frame_time() { return ProgramClock::eleapsed_time_since_last_frame; }
+
+		static void init();
+		static void update();
+	};
+
+}
