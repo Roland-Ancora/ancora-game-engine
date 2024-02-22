@@ -6,6 +6,21 @@ using namespace age;
 
 
 
+float Sprite2D::vert_pos_data[8] = {
+	-1.0f, -1.0f,
+	1.0f, -1.0f,
+	1.0f, 1.0f,
+	-1.0f, 1.0f
+};
+float Sprite2D::tex_pos_data[8] = {
+	0.0f, 1.0f,
+	1.0f, 1.0f,
+	1.0f, 0.0f,
+	0.0f, 0.0f
+};
+
+
+
 Sprite2D::Sprite2D()
 {
 	glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID);
@@ -19,26 +34,11 @@ void Sprite2D::set_texture(Texture2D* tex)
 
 void Sprite2D::show()
 {
-	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
-	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
 	model_mat = translate_mat * rotate_mat * scale_mat;
 	Camera::get_active_camera()->set_model_matrix(&model_mat);
 
-	float ver_pos_data[] = {
-		-1.0f, -1.0f,
-		1.0f, -1.0f,
-		1.0f, 1.0f,
-		-1.0f, 1.0f
-	};
-	float tex_pos_data[] = {
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		1.0f, 0.0f,
-		0.0f, 0.0f
-	};
-
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), ver_pos_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), vert_pos_data, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
 	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos_data, GL_STATIC_DRAW);
 

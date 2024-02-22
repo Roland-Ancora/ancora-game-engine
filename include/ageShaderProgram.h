@@ -26,8 +26,10 @@
 
 #pragma once
 #include <iostream>
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include "ageCONSTANTS.h"
 
 
 
@@ -35,15 +37,13 @@ namespace age {
 
 	class ShaderProgram
 	{
-		GLuint shader_prog_id, MVP_mat_loc, MV_mat_loc, M_mat_loc;
+		GLuint shader_prog_id, MVP_mat_loc, M_mat_loc;
 	public:
 		GLuint get_shader_program_id() { return shader_prog_id; }
 		GLuint get_MVP_matrix_location() { return MVP_mat_loc; }
-		GLuint get_MV_matrix_location() { return MV_mat_loc; }
 		GLuint get_M_matrix_location() { return M_mat_loc; }
+		GLuint get_uniform_location(const char* uniform_name) { return glGetUniformLocation(shader_prog_id, uniform_name); }
 
-		static ShaderProgram create_main_shader_3d_program();
-		static ShaderProgram create_main_shader_2d_program();
 		static ShaderProgram create_shader_program(const char* vert_shader_file, const char* frag_shader_file);
 	};
 

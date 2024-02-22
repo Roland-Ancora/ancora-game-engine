@@ -52,7 +52,7 @@ Camera2D* Camera2D::active_2d_camera = 0;
 Camera2D::Camera2D()
 {
 	active_2d_camera = this;
-	main_shader_prog = ShaderProgram::create_main_shader_2d_program();
+	main_shader_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_2D_VERTEX_SHADER, AGE_DEFAULT_2D_FRAGMENT_SHADER);
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	glUseProgram(main_shader_prog.get_shader_program_id());
 	calculate_and_use_MVP_matrices();
@@ -138,7 +138,7 @@ Camera3D::Camera3D()
 {
 	active_3d_camera = this;
 	glEnable(GL_DEPTH_TEST);
-	main_shader_prog = ShaderProgram::create_main_shader_3d_program();
+	main_shader_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_VERTEX_SHADER, AGE_DEFAULT_3D_FRAGMENT_SHADER);
 	camera_mode = AGE_CAMERA_PERSPECTIVE;
 	projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
 	glUseProgram(main_shader_prog.get_shader_program_id());

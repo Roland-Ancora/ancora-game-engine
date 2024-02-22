@@ -1,6 +1,8 @@
+#pragma once
+#include <../depends/glm/glm.hpp>
+
 #include "ageTexture2D.h"
 #include "ageCamera.h"
-#include "../depends/glm/glm.hpp"
 
 
 
@@ -14,8 +16,12 @@ namespace age {
 		float aspect_ratio = 1.0f; // texture height to width ratio
 		GLuint vboIDs[2];
 		GLuint vaoID;
+
+		static float vert_pos_data[8];
+		static float tex_pos_data[8];
 	public:
 		Sprite2D();
+
 		void set_texture(Texture2D* tex);
 		void show();
 		void move(float x, float y);
