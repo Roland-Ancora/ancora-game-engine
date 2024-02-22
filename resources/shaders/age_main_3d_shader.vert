@@ -7,9 +7,12 @@ layout (location=2) in vec3 VertexNormal;
 
 uniform mat4 MVP_matrix;
 uniform mat4 model_matrix;
+uniform mat4 lightSpaceMatrix;
+uniform vec3 global_light_color;
 
 out vec2 TexturePos;
 out vec3 light_intensity;
+out vec4 FragPosLightSpace;
 
 
 
@@ -24,6 +27,8 @@ void main()
 	vec3 vert_position = vec3(model_matrix * vec4(VertexPos.x, VertexPos.y, VertexPos.z, 1.0f));
 	vec3 s = normalize(vec3(global_light_pos - vec4(vert_position, 1.0f)));
 	light_intensity = global_light_color * max(dot(s, normal), 0.0f) + global_light_min_color;
+
+	FragPosLightSpace = lightSpaceMatrix * model_matrix * vec4(VertexPos, 1.0);
 
 	TexturePos = VertexTexPos;
 	gl_Position = MVP_matrix * vec4(VertexPos.x, VertexPos.y, VertexPos.z, 1.0f);

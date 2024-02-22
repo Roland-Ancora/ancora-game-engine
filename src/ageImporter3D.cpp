@@ -4,6 +4,8 @@
 
 using namespace age;
 
+
+
 Assimp::Importer Importer3D::importer;
 
 

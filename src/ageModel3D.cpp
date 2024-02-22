@@ -6,16 +6,8 @@ using namespace age;
 
 
 
-void Model3D::show()
+void Model3D::opengl_draw()
 {
-	glm::mat4 finaly_mat = translate_mat * rotate_mat * scale_mat;
-	Camera::get_active_camera()->set_model_matrix(&finaly_mat);
-	glColor3f(1.0f, 1.0f, 1.0f);
-
-	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
-	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
-
-
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
 	glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
@@ -55,6 +47,13 @@ void Model3D::show()
 	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Model3D::show()
+{
+	glm::mat4 finaly_mat = translate_mat * rotate_mat * scale_mat;
+	Camera::get_active_camera()->set_model_matrix(&finaly_mat);
+	opengl_draw();
 }
 
 void Model3D::set_position(float x, float y, float z)
@@ -155,62 +154,25 @@ void Model3D_Anim::show()
 	}
 
 	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
-
-	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
-	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->texture_coords_cnt * sizeof(float), model_data->texture_coords, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->normals_cnt * sizeof(float), model_data->normals, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_data->indices_cnt * sizeof(unsigned int), model_data->indices, GL_STATIC_DRAW);
-
-	glBindVertexArray(vaoID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glBindTexture(GL_TEXTURE_2D, model_data->diffuse_texture);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
-
-	glDrawElements(
-		GL_TRIANGLES,
-		model_data->indices_cnt,
-		GL_UNSIGNED_INT,
-		(void*)0
-	);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
+	opengl_draw();
 	for (int i = 0; i < childs.size(); i++)
 		childs[i]->show_child(anim_matrix);
+}
+
+void Model3D_Anim::show_model_only()
+{
+	anim_matrix = translate_mat * rotate_mat * scale_mat;
+	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
+	opengl_draw();
+	for (int i = 0; i < childs.size(); i++)
+		childs[i]->show_child_model_only(anim_matrix);
 }
 
 
 
 
 
-//////// TEST
-
-void Model3D_Anim__childs::show_child(glm::mat4 parent_mat)
+void Model3D_Anim__child::show_child(glm::mat4 parent_mat)
 {
 	anim_matrix = parent_mat * (translate_mat * rotate_mat * scale_mat);
 
@@ -234,51 +196,16 @@ void Model3D_Anim__childs::show_child(glm::mat4 parent_mat)
 	}
 
 	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
-
-	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
-	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->texture_coords_cnt * sizeof(float), model_data->texture_coords, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->normals_cnt * sizeof(float), model_data->normals, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_data->indices_cnt * sizeof(unsigned int), model_data->indices, GL_STATIC_DRAW);
-
-	glBindVertexArray(vaoID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glBindTexture(GL_TEXTURE_2D, model_data->diffuse_texture);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
-
-	glDrawElements(
-		GL_TRIANGLES,
-		model_data->indices_cnt,
-		GL_UNSIGNED_INT,
-		(void*)0
-	);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	opengl_draw();
 }
+
+void Model3D_Anim__child::show_child_model_only(glm::mat4 parent_mat)
+{
+	anim_matrix = parent_mat * (translate_mat * rotate_mat * scale_mat);
+	Camera::get_active_camera()->set_model_matrix(&anim_matrix);
+	opengl_draw();
+}
+
 
 
 

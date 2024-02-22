@@ -174,7 +174,7 @@ void UIButton3D::show()
 
 				if (is_btn_pressed)
 					is_btn_pressed = false;
-				if (InputEventsControler::is_mouse_button_pressed_and_released(*Window::get_active_window(), GLFW_MOUSE_BUTTON_LEFT))
+				if (InputEventsControler::is_mouse_button_pressed_and_released(GLFW_MOUSE_BUTTON_LEFT))
 					is_btn_pressed = true;
 			}
 			else

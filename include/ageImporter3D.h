@@ -24,12 +24,13 @@
 
 
 #pragma once
-#include "../depends/glm/glm.hpp"
-#include "../depends/glm/gtc/matrix_transform.hpp"
-#include "../depends/glm/gtc/type_ptr.hpp"
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
+#include <../depends/glm/glm.hpp>
+#include <../depends/glm/gtc/matrix_transform.hpp>
+#include <../depends/glm/gtc/type_ptr.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include "ageTexture2D.h"
 #include "ageModel3dData.h"
 #include "ageAnimation3D.h"

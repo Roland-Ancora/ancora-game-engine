@@ -18,7 +18,8 @@
 
 
 #pragma once
-#include "../depends/glm/glm.hpp"
+#include <../depends/glm/glm.hpp>
+
 #include "ageTexture2D.h"
 
 
@@ -33,7 +34,7 @@ namespace age {
 		float* texture_coords;
 		float* normals;
 		unsigned int* indices;
-		int vertices_cnt = 0, texture_coords_cnt = 0, normals_cnt = 0, indices_cnt = 0;
+		unsigned int vertices_cnt = 0, texture_coords_cnt = 0, normals_cnt = 0, indices_cnt = 0;
 	};
 
 	struct Model3dGroupDataNode {
