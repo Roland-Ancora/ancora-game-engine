@@ -22,8 +22,9 @@
 #include "ageWindow.h"
 #include "ageCamera.h"
 #include "ageInputEventsControler.h"
+#include "ageShaderProgram.h"
 #include "basic_types/age_rotate_vector.h"
-#include "additions/ageInputEventsFunctions.h"
+//#include "additions/ageInputEventsFunctions.h"
 
 
 
@@ -39,12 +40,17 @@ namespace age {
 		float shown_part_from_x_begin = 1.0f;
 		glm::mat4 finally_mat = glm::mat4(1);
 		bool camera_follow = false;
+		static ShaderProgram ui3d_sh_prog;
+		UIElement3D* parent_element = 0;
 	public:
+		static void Init();
 		virtual void show() {};
 		void disable() { is_active = false; }
 		void enable() { is_active = true; }
 		void enable_camera_follow() { camera_follow = true; }
 		void disable_camera_follow() { camera_follow = false; }
+		void set_parent_element(UIElement3D* elem) { parent_element = elem; }
+		glm::mat4 _get_model_matrix() { return finally_mat; }
 	};
 
 	class UIImage3D : public UIElement3D {

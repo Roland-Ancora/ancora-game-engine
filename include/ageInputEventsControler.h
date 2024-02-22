@@ -40,7 +40,6 @@ namespace age {
 		static float get_scroll_y() { return scroll_y; }
 		static void Init(Window* win);
 		static bool is_mouse_button_pressed_and_released(Window window, int key);
-		static glm::vec3 get_mouse_position_in_world_coords(Window& window, Camera& camera);
 		static void clear_frame(Window window);
 	};
 

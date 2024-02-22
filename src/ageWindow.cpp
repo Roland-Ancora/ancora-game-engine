@@ -6,14 +6,16 @@ using namespace age;
 
 
 
-Window* Window::active_window;
+Window* Window::active_window = 0;
 
 
 
 // Create a window with a specified width, height and title.
-Window::Window(short window_width, short window_height, const char window_title[])
+Window::Window(int window_width, int window_height, const char window_title[])
 	: width(window_width), height(window_height)
 {
+	if (active_window != 0)
+		exit(AGE_WINDOW_OBJECT_OVERLAPPING_ERROR);
 	glfwInit();
 	window = glfwCreateWindow(width, height, window_title, 0, 0);
 	active_window = this;
@@ -50,4 +52,11 @@ void Window::set_fullscreen()
 void Window::add_camera(Camera *camera)
 {
 	camera->set_aspects_ratio(width, height);
+}
+
+glm::vec2 Window::get_cursor_position()
+{
+	double pos_x, pos_y;
+	glfwGetCursorPos(window, &pos_x, &pos_y);
+	return glm::vec2(pos_x, pos_y);
 }

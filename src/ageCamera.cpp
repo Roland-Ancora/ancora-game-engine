@@ -11,6 +11,8 @@ Camera* Camera::active_camera = 0;
 
 Camera::Camera()
 {
+	if (active_camera != 0)
+		exit(AGE_CAMERA_OBJECT_OVERLAPPING_ERROR);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0);
 	active_camera = this;
 }
@@ -20,8 +22,7 @@ Camera::Camera()
 void Camera::set_model_matrix(glm::mat4* model_mat)
 {
 	model_matrix = model_mat;
-	MV_matrix = view_matrix * *model_matrix;
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_mat;
 	glUniformMatrix4fv(now_active_shader->get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 	glUniformMatrix4fv(now_active_shader->get_M_matrix_location(), 1, GL_FALSE, &(*model_matrix)[0][0]);
 }
@@ -60,8 +61,7 @@ Camera2D::Camera2D()
 void Camera2D::calculate_and_use_MVP_matrices()
 {
 	view_matrix = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, -1.0f), vector_up);
-	MV_matrix = view_matrix * *model_matrix;
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
@@ -78,7 +78,7 @@ void Camera2D::set_aspects_ratio(float x, float y)
 {
 	aspects_ratio = x / y;
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
@@ -86,7 +86,7 @@ void Camera2D::set_fov(float new_fov)
 {
 	fov = new_fov;
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
@@ -148,17 +148,16 @@ Camera3D::Camera3D()
 
 void Camera3D::calculate_and_use_MVP_matrices()
 {
-	view_matrix = glm::lookAt(position, position + rotation, glm::vec3(0.0f, 1.0f, 0.0f));
-	MV_matrix = view_matrix * *model_matrix;
-	MVP_matrix = projection_matrix * MV_matrix;
+	view_matrix = glm::lookAt(position, position + view_point_in_sphere, glm::vec3(0.0f, 1.0f, 0.0f));
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
 void Camera3D::calculate_rotation_from_radians()
 {
-	rotation.x = sin(rotation_radians_xy[0]) * cos(rotation_radians_xy[1]);
-	rotation.y = sin(rotation_radians_xy[1]);
-	rotation.z = cos(rotation_radians_xy[0]) * cos(rotation_radians_xy[1]);
+	view_point_in_sphere.x = sin(rotation_radians_xy[0]) * cos(rotation_radians_xy[1]);
+	view_point_in_sphere.y = sin(rotation_radians_xy[1]);
+	view_point_in_sphere.z = cos(rotation_radians_xy[0]) * cos(rotation_radians_xy[1]);
 }
 
 void Camera3D::clear_buffers()
@@ -176,7 +175,7 @@ void Camera3D::set_aspects_ratio(float x, float y)
 										aspects_ratio / 2 * ortho_fov, 
 										-0.5f * ortho_fov, 0.5f * ortho_fov, 
 										ortho_z_near, ortho_z_far);
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
@@ -224,7 +223,7 @@ void Camera3D::set_orthographic()
 									aspects_ratio / 2 * ortho_fov,
 									-0.5f * ortho_fov,
 									0.5f * ortho_fov, ortho_z_near, ortho_z_far);
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
@@ -250,7 +249,7 @@ void Camera3D::set_perspective()
 {
 	camera_mode = AGE_CAMERA_PERSPECTIVE;
 	projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
-	MVP_matrix = projection_matrix * MV_matrix;
+	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
 
@@ -269,4 +268,19 @@ void Camera3D::set_perspective(float z_near, float z_far)
 	persp_z_near = z_near;
 	persp_z_far = z_far;
 	set_perspective();
+}
+
+// Returns the coordinates of the object point in world coordinates 
+// that the pixel displays
+glm::vec3 Camera3D::get_pixel_position_in_world_coords(int pixel_pos_x, int pixel_pos_y, int window_height)
+{
+	int vievport[4];
+	GLfloat pixels;
+	glGetIntegerv(GL_VIEWPORT, vievport);
+	glReadPixels(pixel_pos_x, window_height - pixel_pos_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &pixels);
+	glm::vec3 pr_vec3 = glm::unProject(glm::vec3(pixel_pos_x, window_height - pixel_pos_y, pixels),
+		view_matrix,
+		projection_matrix,
+		glm::vec4(vievport[0], vievport[1], vievport[2], vievport[3]));
+	return glm::vec3(pr_vec3.x, pr_vec3.y, pr_vec3.z);
 }

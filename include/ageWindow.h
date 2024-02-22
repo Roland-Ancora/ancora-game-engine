@@ -29,9 +29,11 @@
 
 
 #pragma once
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "ageCamera.h"
+#include "ageCONSTANTS.h"
 
 
 
@@ -39,14 +41,14 @@ namespace age {
 
 	class Window {
 		GLFWwindow* window;
-		short width, height;
+		int width, height;
 		static Window* active_window;
 	public:
-		Window(short window_width, short window_height, const char window_title[]);
+		Window(int window_width, int window_height, const char window_title[]);
 
 		int is_close() { return glfwWindowShouldClose(window); }
-		short get_width() { return width; }
-		short get_height() { return height; }
+		int get_width() { return width; }
+		int get_height() { return height; }
 
 		static Window* get_active_window() { return active_window; }
 
@@ -54,6 +56,7 @@ namespace age {
 		void update();
 		void set_fullscreen();
 		void add_camera(Camera* camera);
+		glm::vec2 get_cursor_position();
 
 		operator GLFWwindow* () const { return window; }
 	};

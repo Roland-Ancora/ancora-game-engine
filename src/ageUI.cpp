@@ -69,7 +69,7 @@ UIWindow::UIWindow(Camera3D* cam)
 void UIWindow::show_and_update()
 {
 	active_ui_window = this;
-	global_model_mat = glm::translate(glm::mat4(1), camera->get_position() + camera->get_rot_lookat() + camera->get_rot_lookat());
+	global_model_mat = glm::translate(glm::mat4(1), camera->get_position() + camera->get_view_point_in_sphere() + camera->get_view_point_in_sphere());
 	global_model_mat = glm::rotate(global_model_mat, camera->get_rotation().x, glm::vec3(0, 1, 0));
 	global_model_mat = glm::rotate(global_model_mat, -camera->get_rotation().y, glm::vec3(1, 0, 0));
 	global_model_mat = glm::translate(global_model_mat, glm::vec3(-real_width / 2, -real_height / 2, 0.0f));

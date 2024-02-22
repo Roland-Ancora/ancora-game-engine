@@ -6,12 +6,26 @@ using namespace age;
 
 
 
+ShaderProgram UIElement3D::ui3d_sh_prog;
+
+void UIElement3D::Init()
+{
+	ui3d_sh_prog = ShaderProgram::create_shader_program("./resources/shaders/age_main_3d_ui3d_shader.vert", "./resources/shaders/age_main_3d_ui3d_shader.frag");
+}
+
+
+
+
 void UIImage3D::show()
 {
+	Camera::get_active_camera()->use_shader(&ui3d_sh_prog);
+
 	if (camera_follow)
 		set_rotation(Camera3D::get_active_3d_camera()->get_rotation().x, AGE_ROTATE_AROUND_Y);
 
 	finally_mat = translate_mat * rotate_mat * scale_mat;
+	if (parent_element != 0)
+		finally_mat = parent_element->_get_model_matrix() * finally_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);
 
 	float vert_pos[] = {
@@ -69,6 +83,8 @@ void UIImage3D::show()
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
+
+	Camera::get_active_camera()->use_main_shader();
 }
 
 void UIImage3D::set_texture(Texture2D* texture)
@@ -144,10 +160,10 @@ void UIButton3D::show()
 		UIImage3D::show();
 
 		if (is_btn_active) {
-			double* mouse_pos_in_wodtd = get_click_position_in_world_coords(*Window::get_active_window(), *Camera3D::get_active_3d_camera());
-
+			glm::vec2 cursor_pos = Window::get_active_window()->get_cursor_position();
+			glm::vec3 mouse_pos_in_world = Camera3D::get_active_3d_camera()->get_pixel_position_in_world_coords(cursor_pos.x, cursor_pos.y, Window::get_active_window()->get_height());
 			
-			glm::vec4 mouse_pos_in_world_vec(mouse_pos_in_wodtd[0], mouse_pos_in_wodtd[1], mouse_pos_in_wodtd[2], 1.0f);
+			glm::vec4 mouse_pos_in_world_vec(mouse_pos_in_world[0], mouse_pos_in_world[1], mouse_pos_in_world[2], 1.0f);
 			glm::mat4 inverse_finally_mat = glm::inverse(finally_mat);
 			mouse_pos_in_world_vec = inverse_finally_mat * mouse_pos_in_world_vec;
 			
