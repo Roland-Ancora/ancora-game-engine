@@ -2,6 +2,10 @@
 
 
 
+using namespace age;
+
+
+
 Animation3D::~Animation3D()
 {
 	delete[] nodes;

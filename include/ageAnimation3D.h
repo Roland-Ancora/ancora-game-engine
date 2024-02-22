@@ -19,16 +19,20 @@
 
 
 
-struct Animation3dKey {
-	float time_val = 0.0f;
-	float position[3];
-	float rotation[3];
-	float scaling[3];
-};
+namespace age {
 
-struct Animation3D {
-	~Animation3D();
-	float anim_duration = 0.0f;
-	int node_num = 0;
-	Animation3dKey* nodes;
-};
+	struct Animation3dKey {
+		float time_val = 0.0f;
+		float position[3];
+		float rotation[3];
+		float scaling[3];
+	};
+
+	struct Animation3D {
+		~Animation3D();
+		float anim_duration = 0.0f;
+		int node_num = 0;
+		Animation3dKey* nodes;
+	};
+
+}

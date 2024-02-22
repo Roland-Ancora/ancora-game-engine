@@ -8,9 +8,11 @@ using namespace age;
 
 ShaderProgram UIElement3D::ui3d_sh_prog;
 
+
+
 void UIElement3D::Init()
 {
-	ui3d_sh_prog = ShaderProgram::create_shader_program("./resources/shaders/age_main_3d_ui3d_shader.vert", "./resources/shaders/age_main_3d_ui3d_shader.frag");
+	ui3d_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_UI3D_VERTEX_SHADER, AGE_DEFAULT_3D_UI3D_FRAGMENT_SHADER);
 }
 
 
@@ -19,54 +21,25 @@ void UIElement3D::Init()
 void UIImage3D::show()
 {
 	Camera::get_active_camera()->use_shader(&ui3d_sh_prog);
-
 	if (camera_follow)
 		set_rotation(Camera3D::get_active_3d_camera()->get_rotation().x, AGE_ROTATE_AROUND_Y);
-
 	finally_mat = translate_mat * rotate_mat * scale_mat;
 	if (parent_element != 0)
 		finally_mat = parent_element->_get_model_matrix() * finally_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);
 
-	float vert_pos[] = {
-		-(width * shown_part_from_x_begin / 2), height / 2, 0.0f,
-		width * shown_part_from_x_begin / 2, height / 2, 0.0f,
-		width * shown_part_from_x_begin / 2, -(height / 2), 0.0f,
-		-(width * shown_part_from_x_begin / 2), -(height / 2), 0.0f
-	};
-	float tex_pos[] = {
-		0.0f, 0.0f,
-		1.0f + (1.0f - shown_part_from_x_begin), 0.0f,
-		1.0f + (1.0f - shown_part_from_x_begin), 1.0f,
-		0.0f, 1.0f
-	};
-	float vert_normals[] = {
-		0.0f, height, -1.0f,
-		width, height, -1.0f,
-		width, 0.0f, -1.0f,
-		0.0f, 0.0f, -1.0f
-	};
-
-	GLuint shader_color_loc_var = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "object_color");
-	glUniform3f(shader_color_loc_var, 1.0f, 1.0f, 1.0f);
-
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
 	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert_pos, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
 	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert_normals, GL_STATIC_DRAW);
 
 	glBindVertexArray(vaoID);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, *img_texture);
 	glEnable(GL_BLEND);
@@ -82,7 +55,6 @@ void UIImage3D::show()
 	glBindVertexArray(0);
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
 
 	Camera::get_active_camera()->use_main_shader();
 }
@@ -92,18 +64,38 @@ void UIImage3D::set_texture(Texture2D* texture)
 	img_texture = texture;
 	width = texture->get_width() / 100; // without / 100 it's will be very big
 	height = texture->get_height() / 100;
+	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
+	vert_pos[3] = width * shown_part_from_x_begin / 2;
+	vert_pos[6] = width * shown_part_from_x_begin / 2;
+	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
 }
 
 void UIImage3D::set_size(float w, float h)
 {
 	width = w;
 	height = h;
+	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
+	vert_pos[1] = height / 2;
+	vert_pos[3] = width * shown_part_from_x_begin / 2;
+	vert_pos[4] = height / 2;
+	vert_pos[6] = width * shown_part_from_x_begin / 2;
+	vert_pos[7] = -(height / 2);
+	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
+	vert_pos[10] = -(height / 2);
 }
 
 void UIImage3D::set_size(float w)
 {
 	width = w;
 	height = w * (float(img_texture->get_height()) / img_texture->get_width());
+	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
+	vert_pos[1] = height / 2;
+	vert_pos[3] = width * shown_part_from_x_begin / 2;
+	vert_pos[4] = height / 2;
+	vert_pos[6] = width * shown_part_from_x_begin / 2;
+	vert_pos[7] = -(height / 2);
+	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
+	vert_pos[10] = -(height / 2);
 }
 
 void UIImage3D::set_position(float x, float y, float z)
@@ -129,6 +121,17 @@ void UIImage3D::rotate(float angle, rotate_vector vec)
 		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
 		rotate_mat = rotate_mat * transl_aft_rot;
 	}
+}
+
+void UIImage3D::set_part_from_x_begin(float pc)
+{
+	shown_part_from_x_begin = pc;
+	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
+	vert_pos[3] = width * shown_part_from_x_begin / 2;
+	vert_pos[6] = width * shown_part_from_x_begin / 2;
+	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
+	tex_pos[2] = 1.0f + (1.0f - shown_part_from_x_begin);
+	tex_pos[4] = 1.0f + (1.0f - shown_part_from_x_begin);
 }
 
 void UIImage3D::use_middle_rotate_point(float arm)

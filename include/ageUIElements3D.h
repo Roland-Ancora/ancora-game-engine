@@ -14,17 +14,17 @@
 
 
 #pragma once
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
-#include "../depends/glm/glm.hpp"
-#include "../depends/glm/gtc/matrix_transform.hpp"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <../depends/glm/glm.hpp>
+#include <../depends/glm/gtc/matrix_transform.hpp>
+
 #include "ageTexture2D.h"
 #include "ageWindow.h"
 #include "ageCamera.h"
 #include "ageInputEventsControler.h"
 #include "ageShaderProgram.h"
 #include "basic_types/age_rotate_vector.h"
-//#include "additions/ageInputEventsFunctions.h"
 
 
 
@@ -45,6 +45,7 @@ namespace age {
 	public:
 		static void Init();
 		virtual void show() {};
+
 		void disable() { is_active = false; }
 		void enable() { is_active = true; }
 		void enable_camera_follow() { camera_follow = true; }
@@ -56,21 +57,34 @@ namespace age {
 	class UIImage3D : public UIElement3D {
 	protected:
 		Texture2D* img_texture;
-		GLuint vboIDs[3];
+		GLuint vboIDs[2];
 		GLuint vaoID;
 		bool middle_rotate_point_active = false;
 		float rotate_arm = 1.0f;
+		float vert_pos[12] = {
+				-(width * shown_part_from_x_begin / 2), height / 2, 0.0f,
+				width * shown_part_from_x_begin / 2, height / 2, 0.0f,
+				width * shown_part_from_x_begin / 2, -(height / 2), 0.0f,
+				-(width * shown_part_from_x_begin / 2), -(height / 2), 0.0f
+		};
+		float tex_pos[8] = {
+				0.0f, 0.0f,
+				1.0f + (1.0f - shown_part_from_x_begin), 0.0f,
+				1.0f + (1.0f - shown_part_from_x_begin), 1.0f,
+				0.0f, 1.0f
+		};
 	public:
-		UIImage3D() { glGenBuffers(3, vboIDs); glGenVertexArrays(1, &vaoID); }
+		UIImage3D() { glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
 		virtual void show();
+		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
+
 		void set_texture(Texture2D* texture);
 		void set_size(float w, float h);
 		void set_size(float w);
 		void set_position(float x, float y, float z);
 		void set_rotation(float angle, rotate_vector vec);
 		void rotate(float angle, rotate_vector vec);
-		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
-		void set_part_from_x_begin(float pc) { shown_part_from_x_begin = pc; };
+		void set_part_from_x_begin(float pc);
 		void use_middle_rotate_point(float arm = 1.0f);
 		void disable_middle_rotate_point();
 		void set_arm(float arm);
@@ -86,6 +100,8 @@ namespace age {
 		{
 			UIImage3D(); set_default_texture(tex); focus_texture = focus_tex;  pressed_texture = pressed_tex;  disable_texture = dis_tex;
 		}
+		virtual void show();
+
 		void set_default_texture(Texture2D* tex) { default_texture = tex; set_texture(default_texture); }
 		void set_focus_texture(Texture2D* tex) { focus_texture = tex; }
 		void set_pressed_texture(Texture2D* tex) { pressed_texture = tex; }
@@ -94,7 +110,6 @@ namespace age {
 		bool is_pressed() { return is_btn_pressed; }
 		void disable_button() { is_btn_active = false; img_texture = disable_texture; }
 		void enable_button() { is_btn_active = true; img_texture = default_texture; }
-		virtual void show();
 	};
 
 }
