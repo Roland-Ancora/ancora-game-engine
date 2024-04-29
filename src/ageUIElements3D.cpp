@@ -28,18 +28,13 @@ void UIImage3D::show()
 		finally_mat = parent_element->_get_model_matrix() * finally_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), vert_pos, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), vert_tex_pos_data, GL_STATIC_DRAW);
 
 	glBindVertexArray(vaoID);
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, *img_texture);
 	glEnable(GL_BLEND);
@@ -54,7 +49,6 @@ void UIImage3D::show()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 
 	Camera::get_active_camera()->use_main_shader();
 }
@@ -64,38 +58,38 @@ void UIImage3D::set_texture(Texture2D* texture)
 	img_texture = texture;
 	width = texture->get_width() / 100; // without / 100 it's will be very big
 	height = texture->get_height() / 100;
-	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
-	vert_pos[3] = width * shown_part_from_x_begin / 2;
-	vert_pos[6] = width * shown_part_from_x_begin / 2;
-	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[0] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[4] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[8] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[12] = -(width * shown_part_from_x_begin / 2);
 }
 
 void UIImage3D::set_size(float w, float h)
 {
 	width = w;
 	height = h;
-	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
-	vert_pos[1] = height / 2;
-	vert_pos[3] = width * shown_part_from_x_begin / 2;
-	vert_pos[4] = height / 2;
-	vert_pos[6] = width * shown_part_from_x_begin / 2;
-	vert_pos[7] = -(height / 2);
-	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
-	vert_pos[10] = -(height / 2);
+	vert_tex_pos_data[0] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[1] = height / 2;
+	vert_tex_pos_data[4] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[5] = height / 2;
+	vert_tex_pos_data[8] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[9] = -(height / 2);
+	vert_tex_pos_data[12] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[13] = -(height / 2);
 }
 
 void UIImage3D::set_size(float w)
 {
 	width = w;
 	height = w * (float(img_texture->get_height()) / img_texture->get_width());
-	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
-	vert_pos[1] = height / 2;
-	vert_pos[3] = width * shown_part_from_x_begin / 2;
-	vert_pos[4] = height / 2;
-	vert_pos[6] = width * shown_part_from_x_begin / 2;
-	vert_pos[7] = -(height / 2);
-	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
-	vert_pos[10] = -(height / 2);
+	vert_tex_pos_data[0] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[1] = height / 2;
+	vert_tex_pos_data[4] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[5] = height / 2;
+	vert_tex_pos_data[8] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[9] = -(height / 2);
+	vert_tex_pos_data[12] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[13] = -(height / 2);
 }
 
 void UIImage3D::set_position(float x, float y, float z)
@@ -126,12 +120,12 @@ void UIImage3D::rotate(float angle, rotate_vector vec)
 void UIImage3D::set_part_from_x_begin(float pc)
 {
 	shown_part_from_x_begin = pc;
-	vert_pos[0] = -(width * shown_part_from_x_begin / 2);
-	vert_pos[3] = width * shown_part_from_x_begin / 2;
-	vert_pos[6] = width * shown_part_from_x_begin / 2;
-	vert_pos[9] = -(width * shown_part_from_x_begin / 2);
-	tex_pos[2] = 1.0f + (1.0f - shown_part_from_x_begin);
-	tex_pos[4] = 1.0f + (1.0f - shown_part_from_x_begin);
+	vert_tex_pos_data[0] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[4] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[8] = width * shown_part_from_x_begin / 2;
+	vert_tex_pos_data[12] = -(width * shown_part_from_x_begin / 2);
+	vert_tex_pos_data[5] = 1.0f + (1.0f - shown_part_from_x_begin);
+	vert_tex_pos_data[9] = 1.0f + (1.0f - shown_part_from_x_begin);
 }
 
 void UIImage3D::use_middle_rotate_point(float arm)

@@ -5,7 +5,7 @@
 //		The Model3D class is responsible for showing 3D model.
 //	Model3dGroup class is responsible for showing more 3D models.
 // 
-//		This module has external dependencies: OpenGL, GLM.
+//		This module has external dependencies: OpenGL, GLM, STD.
 //		This module has dependencies: ageModel3dData, ageCamera, 
 //	ageAnimation3D, ageProgramClock, age_rotate_vector.
 // 
@@ -15,12 +15,6 @@
 //	It turns out that Model3dGroupNode must be private class, and must
 //	be available for Model3dGroup. Therefore, the mechanism of friendly
 //	classes is used.
-// 
-// 
-// 
-//		NOTES ----------
-//			Sometimes program exits with memory error on line 77 in cpp
-//	file.
 //
 //
 //########################################################################//
@@ -56,10 +50,10 @@ namespace age {
 		void opengl_draw();
 	public:
 		Model3D() { glGenBuffers(4, vboIDs); glGenVertexArrays(1, &vaoID); }
-		void set_model_3d_data(Model3dData* model_3d_data) { model_data = model_3d_data; }
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
 		virtual void show();
+		void set_model_3d_data(Model3dData* model_3d_data);
 		void set_position(float x, float y, float z);
 		void move(float x, float y, float z);
 		void set_rotation(float angle , rotate_vector vec);

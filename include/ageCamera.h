@@ -66,6 +66,7 @@ namespace age {
 		float get_aspects_ratio() { return aspects_ratio; }
 		glm::vec3 get_position() { return position; }
 		ShaderProgram* get_active_shader() { return now_active_shader; }
+		void set_clear_color(float r, float g, float b) { glClearColor(r, g, b, 1.0f); }
 
 		virtual void clear_buffers() {};
 		virtual void set_aspects_ratio(float x, float y) {};

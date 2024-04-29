@@ -14,11 +14,10 @@ namespace age {
 		glm::mat4 model_mat = glm::mat4(1);
 		glm::mat4 translate_mat = glm::mat4(1), scale_mat = glm::mat4(1), rotate_mat = glm::mat4(1);
 		float aspect_ratio = 1.0f; // texture height to width ratio
-		GLuint vboIDs[2];
+		GLuint vboID;
 		GLuint vaoID;
 
-		static float vert_pos_data[8];
-		static float tex_pos_data[8];
+		static float vert_tex_pos_data[16];
 	public:
 		Sprite2D();
 

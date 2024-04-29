@@ -30,6 +30,7 @@ namespace age {
 		std::vector<UIObject*> childs;
 	public:
 		UIObject() {}
+		~UIObject() { if (parent_obj != 0) parent_obj->unbind_child(this); }
 		virtual void show_and_update(glm::mat4 m_mat, glm::mat4 m_mat_ui) {}
 		void set_parent_object(UIObject* obj);
 		void set_position_x(float x);
@@ -44,9 +45,12 @@ namespace age {
 		float get_width() { return width; }
 		float get_height() { return height; }
 		void enable() { is_active = true; }
-		void disable() { is_active = false; }
+		virtual void disable() { is_active = false; }
 		UIObject* get_parent_obj() { return parent_obj; }
 		float get_aspects_ratio() { return aspects_ratio; }
+		bool unbind_child(UIObject* obj);
+		int get_childs_count() { return childs.size(); }
+		bool get_active_state() { return is_active; }
 	};
 
 	class UIWindow : public UIObject {
@@ -111,11 +115,13 @@ namespace age {
 		bool is_pressed() { return is_btn_pressed; }
 		void disable_button() { is_btn_active = false; texture = disable_texture; }
 		void enable_button() { is_btn_active = true; texture = default_texture; }
+		virtual void disable() { is_active = false; is_btn_pressed = false; }
 	};
 
 	class UIText : public UIObject {
 		std::string str = "";
 		float font_t_size = 0.1f, distance_between_lines = 0.0f;
+		float max_width = 1.0f;
 		std::vector<int> str_eds_symbol_nums;
 		Font* font;
 		GLuint vboIDs[2];
@@ -131,6 +137,7 @@ namespace age {
 		void set_font(Font* f) { font = f; }
 		void set_font_size(float size) { font_t_size = size; distance_between_lines = font_t_size / 2; calculate_str_end_symbol_nums_w_words(); }
 		void set_string(std::string string);
+		int get_lines_count() { return str_eds_symbol_nums.size(); }
 	};
 
 	class UIOrganizedContainer : public UIObject {

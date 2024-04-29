@@ -6,16 +6,14 @@ using namespace age;
 
 
 
-float Sprite2D::vert_pos_data[8] = {
+float Sprite2D::vert_tex_pos_data[16] = {
 	-1.0f, -1.0f,
+	0.0f, 1.0f,
 	1.0f, -1.0f,
 	1.0f, 1.0f,
-	-1.0f, 1.0f
-};
-float Sprite2D::tex_pos_data[8] = {
-	0.0f, 1.0f,
 	1.0f, 1.0f,
 	1.0f, 0.0f,
+	-1.0f, 1.0f,
 	0.0f, 0.0f
 };
 
@@ -23,7 +21,7 @@ float Sprite2D::tex_pos_data[8] = {
 
 Sprite2D::Sprite2D()
 {
-	glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID);
+	glGenBuffers(1, &vboID); glGenVertexArrays(1, &vaoID);
 }
 
 void Sprite2D::set_texture(Texture2D* tex)
@@ -37,18 +35,13 @@ void Sprite2D::show()
 	model_mat = translate_mat * rotate_mat * scale_mat;
 	Camera::get_active_camera()->set_model_matrix(&model_mat);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), vert_pos_data, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos_data, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), vert_tex_pos_data, GL_STATIC_DRAW);
 
 	glBindVertexArray(vaoID);
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, *texture);
 	glEnable(GL_BLEND);
@@ -63,7 +56,6 @@ void Sprite2D::show()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 }
 
 void Sprite2D::move(float x, float y)

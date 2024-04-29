@@ -8,6 +8,8 @@ using namespace age;
 
 void UIObject::set_parent_object(UIObject* obj)
 {
+	if (parent_obj != 0)
+		parent_obj->unbind_child(this);
 	obj->childs.push_back(this);
 	parent_obj = obj;
 	height = real_height / parent_obj->get_aspects_ratio();
@@ -48,6 +50,14 @@ void UIObject::set_height(float h)
 	scale_mat = glm::scale(scale_mat, glm::vec3(new_scale, new_scale, 1.0f));
 	real_height = height * parent_obj->get_aspects_ratio();
 	width = real_height / aspects_ratio;
+}
+
+bool UIObject::unbind_child(UIObject* obj)
+{
+	auto result{ std::find(begin(childs), end(childs), obj) };
+	if (result == end(childs))
+		return false;
+	childs.erase(result);
 }
 
 
@@ -292,29 +302,40 @@ void UIText::calculate_str_end_symbol_nums_w_words()
 	str_eds_symbol_nums.clear();
 	float line_size_counter = 0.0f;
 	bool is_first_word_in_line = true;
+	float width_max_line = 0.0f, width_now = 0.0f;
 	for (int i = 0; i < str.size(); i++) {
+		if (is_next_word_bigger_then_width(i, line_size_counter)) {
+			str_eds_symbol_nums.push_back(i - 1);
+			width_max_line = width_max_line > width_now ? width_max_line : width_now;
+			width_now = 0.0f;
+			line_size_counter = 0.0f;
+		}
+		while (str[i] != 10 && str[i] != 32 && str[i] != 0) {
+			width_now += font->Characters[str[i]].Advance * font_t_size;
+			line_size_counter += font->Characters[str[i]].Advance * font_t_size;
+			i++;
+		}
 		if (str[i] == 10) {
 			str_eds_symbol_nums.push_back(i);
 			line_size_counter = 0.0f;
+			width_max_line = width_max_line > width_now ? width_max_line : width_now;
+			width_now = 0.0f;
 			continue;
 		}
 		else if (str[i] == 32) {
+			width_now += font->Characters[str[i]].Advance * font_t_size;
 			line_size_counter += font->Characters[str[i]].Advance * font_t_size;
-			if (line_size_counter > 1.0f) {
+			if (line_size_counter > max_width) {
 				str_eds_symbol_nums.push_back(i);
+				width_max_line = width_max_line > width_now ? width_max_line : width_now;
+				width_now = 0.0f;
 				line_size_counter = 0.0f;
 			}
 			continue;
 		}
-		if (is_next_word_bigger_then_width(i, line_size_counter)) {
-			str_eds_symbol_nums.push_back(i - 1);
-			line_size_counter = 0.0f;
-		}
-		while (str[i] != 10 && str[i] != 32 && str[i] != 0) {
-			line_size_counter += font->Characters[str[i]].Advance * font_t_size;
-			i++;
-		}
 	}
+	width_max_line = width_max_line > width_now ? width_max_line : width_now;
+	width = width_max_line;
 }
 
 bool UIText::is_next_word_bigger_then_width(int char_start_word, float now_str_width)
@@ -323,7 +344,7 @@ bool UIText::is_next_word_bigger_then_width(int char_start_word, float now_str_w
 		now_str_width += font->Characters[str[char_start_word]].Advance * font_t_size;
 		char_start_word++;
 	}
-	if (now_str_width > 1.0f)
+	if (now_str_width > max_width)
 		return true;
 	return false;
 }

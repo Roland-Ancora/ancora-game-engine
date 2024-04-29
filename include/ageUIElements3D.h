@@ -57,24 +57,22 @@ namespace age {
 	class UIImage3D : public UIElement3D {
 	protected:
 		Texture2D* img_texture;
-		GLuint vboIDs[2];
+		GLuint vboID;
 		GLuint vaoID;
 		bool middle_rotate_point_active = false;
 		float rotate_arm = 1.0f;
-		float vert_pos[12] = {
-				-(width * shown_part_from_x_begin / 2), height / 2, 0.0f,
-				width * shown_part_from_x_begin / 2, height / 2, 0.0f,
-				width * shown_part_from_x_begin / 2, -(height / 2), 0.0f,
-				-(width * shown_part_from_x_begin / 2), -(height / 2), 0.0f
-		};
-		float tex_pos[8] = {
-				0.0f, 0.0f,
-				1.0f + (1.0f - shown_part_from_x_begin), 0.0f,
-				1.0f + (1.0f - shown_part_from_x_begin), 1.0f,
-				0.0f, 1.0f
+		float vert_tex_pos_data[16] = {
+			-(width * shown_part_from_x_begin / 2), height / 2,
+			0.0f, 0.0f,
+			width* shown_part_from_x_begin / 2, height / 2,
+			1.0f + (1.0f - shown_part_from_x_begin), 0.0f,
+			width* shown_part_from_x_begin / 2, -(height / 2),
+			1.0f + (1.0f - shown_part_from_x_begin), 1.0f,
+			-(width * shown_part_from_x_begin / 2), -(height / 2),
+			0.0f, 1.0f
 		};
 	public:
-		UIImage3D() { glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
+		UIImage3D() { glGenBuffers(1, &vboID); glGenVertexArrays(1, &vaoID); }
 		virtual void show();
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 

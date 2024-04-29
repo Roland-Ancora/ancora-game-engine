@@ -8,13 +8,6 @@ using namespace age;
 
 void Model3D::opengl_draw()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->texture_coords_cnt * sizeof(float), model_data->texture_coords, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
-	glBufferData(GL_ARRAY_BUFFER, model_data->normals_cnt * sizeof(float), model_data->normals, GL_STATIC_DRAW);
-
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_data->indices_cnt * sizeof(unsigned int), model_data->indices, GL_STATIC_DRAW);
 
@@ -54,6 +47,17 @@ void Model3D::show()
 	glm::mat4 finaly_mat = translate_mat * rotate_mat * scale_mat;
 	Camera::get_active_camera()->set_model_matrix(&finaly_mat);
 	opengl_draw();
+}
+
+void Model3D::set_model_3d_data(Model3dData* model_3d_data)
+{
+	model_data = model_3d_data;
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glBufferData(GL_ARRAY_BUFFER, model_data->texture_coords_cnt * sizeof(float), model_data->texture_coords, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+	glBufferData(GL_ARRAY_BUFFER, model_data->normals_cnt * sizeof(float), model_data->normals, GL_STATIC_DRAW);
 }
 
 void Model3D::set_position(float x, float y, float z)
