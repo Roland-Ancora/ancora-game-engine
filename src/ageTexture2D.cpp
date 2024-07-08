@@ -1,5 +1,4 @@
 #include "../include/ageTexture2D.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include <../depends/stb_image.h>
 
 

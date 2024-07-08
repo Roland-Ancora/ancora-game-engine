@@ -14,5 +14,5 @@ out vec2 TexPos;
 void main()
 {
     TexPos = TextData.zw;
-    gl_Position = MVP_matrix * vec4(TextData.xy, z_val, 1.0);
+    gl_Position = model_matrix * vec4(z_val, TextData.y, TextData.x, 1.0);
 }
