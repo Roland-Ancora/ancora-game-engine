@@ -9,6 +9,29 @@ using namespace age;
 glm::mat4 Camera::ident_mat = glm::mat4(1);
 Camera* Camera::active_camera = 0;
 
+void Camera::create_frame_buffer(unsigned int resolution_w, unsigned int resolution_h)
+{
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glGenTextures(1, &FBO_texture);
+	glBindTexture(GL_TEXTURE_2D, FBO_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, resolution_w, resolution_h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBO_texture, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenRenderbuffers(1, &RBO_depth_trapharet);
+	glBindRenderbuffer(GL_RENDERBUFFER, RBO_depth_trapharet);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolution_w, resolution_h);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO_depth_trapharet);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		printf("ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n");
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 Camera::Camera()
 {
 	if (active_camera != 0)
@@ -148,7 +171,7 @@ Camera3D::Camera3D()
 
 void Camera3D::calculate_and_use_MVP_matrices()
 {
-	view_matrix = glm::lookAt(position, position + view_point_in_sphere, glm::vec3(0.0f, 1.0f, 0.0f));
+	view_matrix = glm::lookAt(position, position + view_point_in_sphere, view_up_point);
 	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
 }
@@ -283,4 +306,20 @@ glm::vec3 Camera3D::get_pixel_position_in_world_coords(int pixel_pos_x, int pixe
 		projection_matrix,
 		glm::vec4(vievport[0], vievport[1], vievport[2], vievport[3]));
 	return glm::vec3(pr_vec3.x, pr_vec3.y, pr_vec3.z);
+}
+
+void Camera3D::set_view_up_point(float x, float y, float z)
+{
+	view_up_point.x = x;
+	view_up_point.y = y;
+	view_up_point.z = z;
+	calculate_and_use_MVP_matrices();
+}
+
+void Camera3D::set_view_point_in_sphere(float x, float y, float z)
+{
+	view_point_in_sphere.x = x;
+	view_point_in_sphere.y = y;
+	view_point_in_sphere.z = z;
+	calculate_and_use_MVP_matrices();
 }

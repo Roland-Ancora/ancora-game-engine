@@ -59,6 +59,9 @@ namespace age {
 		glm::mat4* model_matrix = &ident_mat;
 		float aspects_ratio = 1.0f; // it's width to height ratio
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+		GLuint FBO, FBO_texture, RBO_depth_trapharet;
+		void create_frame_buffer(unsigned int resolution_w, unsigned int resolution_h);
 	public:
 		static Camera* get_active_camera() { return active_camera; }
 
@@ -107,9 +110,10 @@ namespace age {
 
 	class Camera3D : public Camera {
 		glm::vec2 rotation_radians_xy = glm::vec2(3.14159f, 0.0f);
-		glm::vec3 view_point_in_sphere;
 		float persp_fov = 55.0f, persp_z_near = 0.01f, persp_z_far = 50.0f;
 		float ortho_fov = 15.0f, ortho_z_near = 0.01f, ortho_z_far = 50.0f;
+		glm::vec3 view_up_point = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 view_point_in_sphere = glm::vec3(0.0f, 0.0f, 1.0f);
 		void calculate_and_use_MVP_matrices();
 		void calculate_rotation_from_radians();
 		static Camera3D* active_3d_camera;
@@ -126,10 +130,12 @@ namespace age {
 		float get_persp_fov() { return persp_fov; }
 		float get_persp_z_near() { return persp_z_near; }
 		float get_persp_z_far() { return persp_z_far; }
+		glm::vec3 get_view_up_point() { return view_up_point; }
 
 		virtual void clear_buffers();
 		virtual void set_aspects_ratio(float x, float y);
 
+		void set_view_up_point(float x, float y, float z);
 		void set_position(float x, float y, float z);
 		void move(float x, float y, float z);
 		void set_rotation(float x, float y);
@@ -141,6 +147,7 @@ namespace age {
 		void set_perspective(float fov);
 		void set_perspective(float z_near, float z_far);
 		glm::vec3 get_pixel_position_in_world_coords(int pixel_pos_x, int pixel_pos_y, int window_height);
+		void set_view_point_in_sphere(float x, float y, float z);
 	};
 
 }

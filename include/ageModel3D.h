@@ -26,6 +26,7 @@
 #include <GLFW/glfw3.h>
 #include <../depends/glm/glm.hpp>
 #include <../depends/glm/gtc/matrix_transform.hpp>
+#include <../depends/glm/gtx/matrix_decompose.hpp>
 #include <vector>
 
 #include "ageModel3dData.h"
@@ -44,6 +45,7 @@ namespace age {
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
+		float x_rot = 0.0f, y_rot = 0.0f, z_rot = 0.0f;
 		GLuint vboIDs[4];
 		GLuint vaoID;
 
@@ -52,13 +54,17 @@ namespace age {
 		Model3D() { glGenBuffers(4, vboIDs); glGenVertexArrays(1, &vaoID); }
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
+		glm::mat4 get_model_matrix() { return translate_mat * rotate_mat * scale_mat; }
+		Model3dData* get_model_data() { return model_data; }
 		virtual void show();
 		void set_model_3d_data(Model3dData* model_3d_data);
 		void set_position(float x, float y, float z);
 		void move(float x, float y, float z);
 		void set_rotation(float angle , rotate_vector vec);
+		void set_rotation(glm::mat4 matrix);
 		void rotate(float angle, rotate_vector vec);
 		void set_scale(float x, float y, float z);
+		glm::mat4 get_reverse_matrix();
 	};
 
 
@@ -104,6 +110,9 @@ namespace age {
 		void show();
 	public:
 		~Model3dGroupNode();
+		int get_childs_count() { return childs_count; }
+		Model3dGroupNode* get_child(int id) { return &childs[id]; }
+		Model3D* get_model() { return &model; }
 	};
 
 	class Model3dGroup {
@@ -111,6 +120,8 @@ namespace age {
 		int childs_count = 0;
 	public:
 		~Model3dGroup();
+		int get_childs_count() { return childs_count; }
+		Model3dGroupNode* get_child(int id) { return &childs[id]; }
 		void set_group_from_data(Model3dGroupData* data);
 		void show();
 	};

@@ -76,17 +76,52 @@ void Model3D::set_rotation(float angle, rotate_vector vec)
 {
 	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
 	rotate_mat = rotate_by_vector_now;
+
+	if (vec == AGE_ROTATE_AROUND_X)
+		x_rot = angle;
+	else if (vec == AGE_ROTATE_AROUND_Y)
+		y_rot = angle;
+	else
+		z_rot = angle;
+}
+
+void Model3D::set_rotation(glm::mat4 matrix)
+{
+	rotate_mat = matrix;
+	glm::vec3 _tmp_vec3;
+	glm::vec4 _persp;
+	glm::quat _rotate;
+	glm::decompose(matrix, _tmp_vec3, _rotate, _tmp_vec3, _tmp_vec3, _persp);
+	x_rot = _rotate.x, y_rot = _rotate.y, z_rot = _rotate.z;
 }
 
 void Model3D::rotate(float angle, rotate_vector vec)
 {
 	rotate_mat = glm::rotate(rotate_mat, angle, vec);
+
+	if (vec == AGE_ROTATE_AROUND_X)
+		x_rot += angle;
+	else if (vec == AGE_ROTATE_AROUND_Y)
+		y_rot += angle;
+	else
+		z_rot += angle;
 }
 
 void Model3D::set_scale(float x, float y, float z)
 {
 	scale_mat = glm::scale(scale_mat, glm::vec3(x / x_scale, y / y_scale, z / z_scale));
 	x_scale = x, y_scale = y, z_scale = z;
+}
+
+glm::mat4 Model3D::get_reverse_matrix()
+{
+	glm::mat4 mat = glm::mat4(1);
+	mat = glm::scale(mat, glm::vec3(1 / x_scale, 1 / y_scale, 1 / z_scale));
+	mat = glm::rotate(mat, -x_rot, AGE_ROTATE_AROUND_X);
+	mat = glm::rotate(mat, -y_rot, AGE_ROTATE_AROUND_Y);
+	mat = glm::rotate(mat, -z_rot, AGE_ROTATE_AROUND_Z);
+	mat = glm::translate(mat, glm::vec3(-x_pos, -y_pos, -z_pos));
+	return mat;
 }
 
 

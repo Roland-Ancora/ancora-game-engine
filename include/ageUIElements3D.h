@@ -34,6 +34,7 @@ namespace age {
 	protected:
 		bool is_active = true;
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
+		glm::mat4 independ_rotate_mat = glm::mat4(1);
 		float width = 1.0f, height = 1.0f;
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
@@ -41,6 +42,7 @@ namespace age {
 		glm::mat4 finally_mat = glm::mat4(1);
 		bool camera_follow = false;
 		static ShaderProgram ui3d_sh_prog;
+		static GLuint ui3d_sh_prog__alpha_channel_uniform;
 		UIElement3D* parent_element = 0;
 	public:
 		static void Init();
@@ -60,7 +62,8 @@ namespace age {
 		GLuint vboID;
 		GLuint vaoID;
 		bool middle_rotate_point_active = false;
-		float rotate_arm = 1.0f;
+		glm::vec3 rotate_arm = glm::vec3(0.0f, 0.0f, 1.0f);
+		float alpha_channel = 1.0f;
 		float vert_tex_pos_data[16] = {
 			-(width * shown_part_from_x_begin / 2), height / 2,
 			0.0f, 0.0f,
@@ -71,21 +74,27 @@ namespace age {
 			-(width * shown_part_from_x_begin / 2), -(height / 2),
 			0.0f, 1.0f
 		};
+		float texture_pos_x = 0.0f, texture_pos_y = 0.0f;
 	public:
 		UIImage3D() { glGenBuffers(1, &vboID); glGenVertexArrays(1, &vaoID); }
 		virtual void show();
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
+		void set_alpha_channel(float alpha) { alpha_channel = alpha;  }
 
 		void set_texture(Texture2D* texture);
 		void set_size(float w, float h);
 		void set_size(float w);
 		void set_position(float x, float y, float z);
 		void set_rotation(float angle, rotate_vector vec);
+		void set_rotation(glm::mat4 rotation_matrix);
+		void set_independ_rotation(float angle, rotate_vector vec) { independ_rotate_mat = glm::rotate(glm::mat4(1), angle, vec); }
 		void rotate(float angle, rotate_vector vec);
+		void rotate(glm::mat4 rotation_matrix);
 		void set_part_from_x_begin(float pc);
-		void use_middle_rotate_point(float arm = 1.0f);
+		void use_middle_rotate_point(glm::vec3 arm = glm::vec3(0.0f, 0.0f, 1.0f));
 		void disable_middle_rotate_point();
-		void set_arm(float arm);
+		void set_arm(glm::vec3 arm);
+		void set_texture_position(float x, float y);
 	};
 
 	class UIButton3D : public UIImage3D {

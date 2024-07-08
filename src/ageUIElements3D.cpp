@@ -7,12 +7,14 @@ using namespace age;
 
 
 ShaderProgram UIElement3D::ui3d_sh_prog;
+GLuint UIElement3D::ui3d_sh_prog__alpha_channel_uniform;
 
 
 
 void UIElement3D::Init()
 {
-	ui3d_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_UI3D_VERTEX_SHADER, AGE_DEFAULT_3D_UI3D_FRAGMENT_SHADER);
+	ui3d_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_UI3D_VERTEX_SHADER, AGE_DEFAULT_UI3D_FRAGMENT_SHADER);
+	ui3d_sh_prog__alpha_channel_uniform = glGetUniformLocation(ui3d_sh_prog.get_shader_program_id(), AGE_UI3D_SHADER_UNIFORM_ALPHA_CHANNEL_NAME);
 }
 
 
@@ -21,9 +23,10 @@ void UIElement3D::Init()
 void UIImage3D::show()
 {
 	Camera::get_active_camera()->use_shader(&ui3d_sh_prog);
+	glUniform1f(ui3d_sh_prog__alpha_channel_uniform, alpha_channel);
 	if (camera_follow)
 		set_rotation(Camera3D::get_active_3d_camera()->get_rotation().x, AGE_ROTATE_AROUND_Y);
-	finally_mat = translate_mat * rotate_mat * scale_mat;
+	finally_mat = translate_mat * rotate_mat * independ_rotate_mat * scale_mat;
 	if (parent_element != 0)
 		finally_mat = parent_element->_get_model_matrix() * finally_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);
@@ -103,7 +106,16 @@ void UIImage3D::set_rotation(float angle, rotate_vector vec)
 	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
 	rotate_mat = rotate_by_vector_now;
 	if (middle_rotate_point_active) {
-		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
+		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), rotate_arm);
+		rotate_mat = rotate_mat * transl_aft_rot;
+	}
+}
+
+void UIImage3D::set_rotation(glm::mat4 rotation_matrix)
+{
+	rotate_mat = rotation_matrix;
+	if (middle_rotate_point_active) {
+		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), rotate_arm);
 		rotate_mat = rotate_mat * transl_aft_rot;
 	}
 }
@@ -112,7 +124,16 @@ void UIImage3D::rotate(float angle, rotate_vector vec)
 {
 	rotate_mat = glm::rotate(rotate_mat, angle, vec);
 	if (middle_rotate_point_active) {
-		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
+		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), rotate_arm);
+		rotate_mat = rotate_mat * transl_aft_rot;
+	}
+}
+
+void UIImage3D::rotate(glm::mat4 rotation_matrix)
+{
+	rotate_mat = rotation_matrix * rotate_mat;
+	if (middle_rotate_point_active) {
+		glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1),rotate_arm);
 		rotate_mat = rotate_mat * transl_aft_rot;
 	}
 }
@@ -128,25 +149,42 @@ void UIImage3D::set_part_from_x_begin(float pc)
 	vert_tex_pos_data[9] = 1.0f + (1.0f - shown_part_from_x_begin);
 }
 
-void UIImage3D::use_middle_rotate_point(float arm)
+void UIImage3D::use_middle_rotate_point(glm::vec3 arm)
 {
 	middle_rotate_point_active = true;
 	rotate_arm = arm;
-	glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, rotate_arm));
+	glm::mat4 transl_aft_rot = glm::translate(glm::mat4(1), rotate_arm);
 	rotate_mat = rotate_mat * transl_aft_rot;
 }
 
 void UIImage3D::disable_middle_rotate_point()
 {
 	middle_rotate_point_active = false;
-	rotate_mat = rotate_mat * glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, -rotate_arm));
+	rotate_mat = rotate_mat * glm::translate(glm::mat4(1), -rotate_arm);
 }
 
-void UIImage3D::set_arm(float arm)
+void UIImage3D::set_arm(glm::vec3 arm)
 {
-	rotate_mat = rotate_mat * glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, arm - rotate_arm));
+	rotate_mat = rotate_mat * glm::translate(glm::mat4(1), arm - rotate_arm);
 	rotate_arm = arm;
 }
+
+void UIImage3D::set_texture_position(float x, float y)
+{
+	texture_pos_x = x, texture_pos_y = y;
+	vert_tex_pos_data[2] = 0.0f + texture_pos_x;
+	vert_tex_pos_data[3] = 0.0f + texture_pos_y;
+
+	vert_tex_pos_data[6] = 1.0f + (1.0f - shown_part_from_x_begin) + texture_pos_x;
+	vert_tex_pos_data[7] = 0.0f + texture_pos_y;
+
+	vert_tex_pos_data[10] = 1.0f + (1.0f - shown_part_from_x_begin) + texture_pos_x;
+	vert_tex_pos_data[11] = 1.0f + texture_pos_y;
+
+	vert_tex_pos_data[14] = 0.0f + texture_pos_x;
+	vert_tex_pos_data[15] = 1.0f + texture_pos_y;
+}
+
 
 
 
