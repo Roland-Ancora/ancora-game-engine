@@ -6,6 +6,10 @@ Ancora Game Engine.vcxproj.filters
 Ancora Game Engine.vcxproj.user
 .vs/
 x64/
+Ancora Game Engine.cpp
+framework.h
+pch.cpp
+pch.h
 
 # Dependencies
 assimp-vc143-mt.dll

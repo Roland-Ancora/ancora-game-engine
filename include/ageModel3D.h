@@ -41,7 +41,7 @@ namespace age {
 
 	class Model3D {
 	protected:
-		Model3dData* model_data;
+		Model3dData* model_data = 0;
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
@@ -65,6 +65,30 @@ namespace age {
 		void rotate(float angle, rotate_vector vec);
 		void set_scale(float x, float y, float z);
 		glm::mat4 get_reverse_matrix();
+	public:
+		Model3D& operator = (const Model3D& model)
+		{
+			if (&model != this)
+			{
+				model_data = model.model_data;
+				rotate_mat = model.rotate_mat, translate_mat = model.translate_mat, scale_mat = model.scale_mat;
+				x_pos = model.x_pos, y_pos = model.y_pos, z_pos = model.z_pos;
+				x_scale = model.x_scale, y_scale = model.y_scale, z_scale = model.z_scale;
+				x_rot = model.x_rot, y_rot = model.y_rot, z_rot = model.z_rot;
+
+				glGenBuffers(4, vboIDs); 
+				glGenVertexArrays(1, &vaoID);
+				if (model_data != 0) {
+					glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+					glBufferData(GL_ARRAY_BUFFER, model_data->vertices_cnt * sizeof(float), model_data->vertices, GL_STATIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+					glBufferData(GL_ARRAY_BUFFER, model_data->texture_coords_cnt * sizeof(float), model_data->texture_coords, GL_STATIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, vboIDs[2]);
+					glBufferData(GL_ARRAY_BUFFER, model_data->normals_cnt * sizeof(float), model_data->normals, GL_STATIC_DRAW);
+				}
+			}
+			return *this;
+		}
 	};
 
 

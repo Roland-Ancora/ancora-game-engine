@@ -10,7 +10,7 @@ ShaderProgram Font::font_sh_prog;
 
 void Font::Init()
 {
-    font_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_UI_TEXT_VERTEX_SHADER, AGE_DEFAULT_3D_UI_TEXT_FRAGMENT_SHADER);
+    font_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_TEXT_VERTEX_SHADER, AGE_DEFAULT_UI_TEXT_FRAGMENT_SHADER);
 }
 
 Font::Font(const char* file_name)

@@ -6,6 +6,33 @@ using namespace age;
 
 
 
+UIObject* UIObject::focused_object = 0;
+
+void UIObject::is_focused_calculate(glm::mat4 p_ui_mat)
+{
+	double mouse_pos_x, mouse_pos_y;
+	glfwGetCursorPos(*Window::get_active_window(), &mouse_pos_x, &mouse_pos_y);
+	mouse_pos_x /= Window::get_active_window()->get_width();
+	mouse_pos_y /= Window::get_active_window()->get_height();
+	mouse_pos_y /= Camera::get_active_camera()->get_aspects_ratio();
+
+	glm::vec3 scale_history, traslation_history;
+	glm::vec3 self_model_mat__skew_vec;
+	glm::quat self_model_mat__orient_history;
+	glm::vec4 self_model_mat__persp_history;
+	glm::decompose(p_ui_mat * model_mat, scale_history, self_model_mat__orient_history, traslation_history, self_model_mat__skew_vec, self_model_mat__persp_history);
+
+	if (mouse_pos_x < traslation_history.z + scale_history.z
+		&& mouse_pos_x > traslation_history.z
+		&& mouse_pos_y > traslation_history.y
+		&& mouse_pos_y < traslation_history.y + scale_history.y * aspects_ratio) {
+			focused = true;
+			focused_object = this;
+	}
+	else
+		focused = false;
+}
+
 UIObject::~UIObject()
 {
 	if (parent_obj != 0)
@@ -149,6 +176,7 @@ UIWindow::UIWindow(std::uint16_t resolution_w, std::uint16_t resolution_h)
 	active_ui_window = this;
 	main_shader_prog_ui = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_VERTEX_SHADER, AGE_DEFAULT_UI_FRAGMENT_SHADER);
 	main_shader_fin_prog_ui = ShaderProgram::create_shader_program("resources/shaders/age_main_ui_fin_texture_shader.vert", "resources/shaders/age_main_ui_fin_texture_shader.frag");
+	alpha_uniform_loc = glGetUniformLocation(main_shader_prog_ui.get_shader_program_id(), "alpha");
 
 	aspects_ratio = float(resolution_h) / resolution_w;
 	ver_pos_data[5] = 1.0f - 2 / aspects_ratio;
@@ -198,6 +226,7 @@ void UIWindow::show()
 	glEnable(GL_DEPTH_TEST);
 	Camera::get_active_camera()->use_shader(&main_shader_prog_ui);
 
+	UIObject::_clear_focused_object();
 	for (std::uint16_t i = 0; i < childs.size(); i++)
 		childs[i]->show_and_update(VP_mat, glm::mat4(1));
 
@@ -255,10 +284,14 @@ void UIImage::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		glm::mat4 fin_model_mat = p_mat * model_mat;
 		glm::mat4 fin_ui_mat = p_ui_mat * model_mat;
 
+		is_focused_calculate(p_ui_mat);
+
 		for (std::uint16_t i = 0; i < childs_back.size(); i++)
 			childs_back[i]->show_and_update(fin_model_mat, fin_ui_mat);
 
 		Camera::get_active_camera()->set_model_matrix(&fin_model_mat);
+
+		glUniform1f(UIWindow::get_active_ui_window()->_get_alpha_uniform_location(), alpha);
 
 		glBindVertexArray(vaoID);
 		glEnableVertexAttribArray(0);
@@ -385,23 +418,7 @@ void UIButton::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		UIImage::show_and_update(p_mat, p_ui_mat);
 
 		if (is_btn_active) {
-			double mouse_pos_x, mouse_pos_y;
-			glfwGetCursorPos(*Window::get_active_window(), &mouse_pos_x, &mouse_pos_y);
-			mouse_pos_x /= Window::get_active_window()->get_width();
-			mouse_pos_y /= Window::get_active_window()->get_height();
-			mouse_pos_y /= Camera::get_active_camera()->get_aspects_ratio();
-
-			glm::vec3 scale_history, traslation_history;
-			glm::vec3 self_model_mat__skew_vec;
-			glm::quat self_model_mat__orient_history;
-			glm::vec4 self_model_mat__persp_history;
-			glm::decompose(p_ui_mat * model_mat, scale_history, self_model_mat__orient_history, traslation_history, self_model_mat__skew_vec, self_model_mat__persp_history);
-
-			if (mouse_pos_x < traslation_history.z + scale_history.z
-				&& mouse_pos_x > traslation_history.z
-				&& mouse_pos_y > traslation_history.y
-				&& mouse_pos_y < traslation_history.y + scale_history.y * aspects_ratio) {
-
+			if (focused) {
 				texture = focus_texture;
 				if (is_btn_pressed)
 					is_btn_pressed = false;
@@ -428,6 +445,8 @@ void UIText::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		Camera::get_active_camera()->use_shader(Font::get_shader_program());
 		GLuint shader_z_var_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "z_val");
 		glUniform1f(shader_z_var_loc, z_var);
+		GLuint shader_alpha_var_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "alpha");
+		glUniform1f(shader_alpha_var_loc, alpha);
 
 		glm::mat4 fin_mat = p_mat * model_mat;
 		Camera::get_active_camera()->set_model_matrix(&fin_mat);
@@ -605,9 +624,6 @@ void UIOrganizedContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 			list_translate_mat = glm::translate(list_translate_mat, glm::vec3(0.0f, (now_list_pos - new_list_pos) * UIWindow::get_active_ui_window()->get_aspects_ratio(), 0.0f));
 			now_list_pos = new_list_pos;
 		}
-
-		//global_model_mat = UIWindow::get_active_ui_window()->get_ui_window_matrix() * list_translate_mat * m_mat_ui * (translate_mat * rotate_mat * scale_mat);
-		//model_mat_in_ui = list_translate_mat * m_mat_ui * (translate_mat * rotate_mat * scale_mat);
 		glm::mat4 fin_matrix = list_translate_mat * p_mat * model_mat;
 		glm::mat4 fin_ui_matrix = list_translate_mat * p_ui_mat * model_mat;
 		for (int i = 0; i < childs.size(); i++)

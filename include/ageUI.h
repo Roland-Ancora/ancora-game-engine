@@ -1,3 +1,23 @@
+//########################################################################//
+//
+//									UI
+//	
+//		The UI module is responsible for showing UI elements on display.
+//	Implemented as a separate framebuffer, which, after rendering, is 
+//	superimposed on the main framebuffer. All objects are UIObject and
+//	can contain dependent children. The root object is a singltone
+//	UIWindow object.
+// 
+//		This module has external dependencies: OpenGL, GLM, STD, FFmpeg.
+//		This module has dependencies: ageTexture2D, ageCamera, ageWindow,
+//	ageInputEventsControler, ageFont, ageShaderProgram and 
+//	ageProgrsmClock.
+//
+//
+//########################################################################//
+
+
+
 #pragma once
 #include <cinttypes>
 #include <iostream>
@@ -10,7 +30,6 @@ extern "C"
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 }
-
 #include "ageTexture2D.h"
 #include "ageCamera.h"
 #include "ageWindow.h"
@@ -31,20 +50,26 @@ namespace age {
 		float pos_x = 0.0f, pos_y = 0.0f;
 		float z_var = 0.1f;
 		float aspects_ratio = 1.0f;
+		float alpha = 1.0f;
 		glm::mat4 translate_mat = glm::mat4(1), scale_mat = glm::mat4(1), rotate_mat = glm::mat4(1);
 		glm::mat4 model_mat = glm::mat4(1);
 		UIObject* parent_obj = 0;
-
-		// test block
+		bool focused = false;
 		std::vector<UIObject*> childs;
 		std::vector<UIObject*> childs_front;
 		std::vector<UIObject*> childs_back;
-		// end test block
-
+		static UIObject* focused_object;
+	protected:
+		void is_focused_calculate(glm::mat4 p_ui_mat);
 	public:
 		~UIObject();
-		
 		UIObject();
+		static UIObject* get_focused_object() { return focused_object; }
+		static void _clear_focused_object() { focused_object = 0; }
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat) {}
+		virtual void set_z_val(float z);
+		virtual void disable();
+	public:
 		float get_aspects_ratio() { return aspects_ratio; }
 		bool get_active_state() { return is_active; }
 		UIObject* get_parent_object() { return parent_obj; }
@@ -54,18 +79,20 @@ namespace age {
 		float get_width() { return width; }
 		float get_height() { return height; }
 		float get_z_val() { return z_var; }
+		float get_alpha() { return alpha; }
 		int get_childs_count() { return childs.size(); }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat) {}
+		UIObject* get_child(int id) { return childs[id]; }
+		bool is_focused() { return focused; }
+		void set_alpha(float a) { alpha = a; }
+	public:
 		void set_parent_object(UIObject* obj);
 		void set_position_x(float x);
 		void set_position_y(float y);
 		void set_position(float x, float y);
 		void set_width(float w);
 		void set_height(float h);
-		virtual void set_z_val(float z);
 		void _add_child_object(UIObject* obj);
 		void enable();
-		virtual void disable();
 		bool unbind_child(UIObject* obj);
 		void _replace_backfront_child(UIObject* obj);
 	};
@@ -91,10 +118,14 @@ namespace age {
 			1.0f, 0.0f,
 			0.0f, 0.0f
 		};
+		GLuint alpha_uniform_loc;
 	public:
-		static UIWindow* get_active_ui_window() { return active_ui_window; }
 		UIWindow(std::uint16_t resolutin_w, std::uint16_t resolution_h);
+		static UIWindow* get_active_ui_window() { return active_ui_window; }
+	public:
 		void use_main_ui_shader() { Camera::get_active_camera()->use_shader(&main_shader_prog_ui); }
+		GLuint _get_alpha_uniform_location() { return alpha_uniform_loc; }
+	public:
 		void show();
 	};
 
@@ -120,10 +151,12 @@ namespace age {
 		};
 	public:
 		UIImage();
-		float get_part_from_x_begin() { return shown_part_from_x_l; }
 		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
-		void set_texture(Texture2D* tex);
 		virtual void set_z_val(float z);
+	public:
+		float get_part_from_x_begin() { return shown_part_from_x_l; }
+	public:
+		void set_texture(Texture2D* tex);
 		void set_part_from_x_begin(float pc);
 		void set_part_from_y_begin(float pc);
 		void set_part_from_y_end(float pc);
@@ -138,6 +171,9 @@ namespace age {
 		UIButton() { UIImage(); }
 		UIButton(UIObject* p_obj) { UIImage(); set_parent_object(p_obj); }
 		UIButton(UIObject* p_obj, Texture2D* tex[4]);
+		virtual void disable() { is_active = false; is_btn_pressed = false; }
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+	public:
 		void set_default_texture(Texture2D* tex) { default_texture = tex; set_texture(default_texture); }
 		void set_focus_texture(Texture2D* tex) { focus_texture = tex; }
 		void set_pressed_texture(Texture2D* tex) { pressed_texture = tex; }
@@ -145,8 +181,6 @@ namespace age {
 		bool is_pressed() { return is_btn_pressed; }
 		void disable_button() { is_btn_active = false; texture = disable_texture; }
 		void enable_button() { is_btn_active = true; texture = default_texture; }
-		virtual void disable() { is_active = false; is_btn_pressed = false; }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
 		inline void set_textures(Texture2D* tex[4]);
 	};
 
@@ -158,17 +192,20 @@ namespace age {
 		Font* font;
 		GLuint vboIDs[2];
 		GLuint vaoID;
+	private:
 		void calculate_str_end_symbol_nums();
 		void calculate_str_end_symbol_nums_w_words();
 		bool is_next_word_bigger_then_width(int char_start_word, float now_str_width);
 	public:
 		UIText() { glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void set_z_val(float z);
+		virtual void set_size(float w, float h) {} // DOESN'T MAKE SENSE
+	public:
 		void set_font(Font* f) { font = f; }
 		void set_font_size(float size) { font_t_size = size; distance_between_lines = font_t_size / 2; calculate_str_end_symbol_nums_w_words(); }
 		int get_lines_count() { return str_eds_symbol_nums.size(); }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
-		virtual void set_z_val(float z); // MUST BE REALIZED
-		virtual void set_size(float w, float h) {} // DOESN'T MAKE SENSE
+	public:
 		void set_string(std::string string);
 	};
 
@@ -179,8 +216,9 @@ namespace age {
 	public:
 		virtual void set_size(float w, float h);
 		virtual void set_z_val(float z) {} // MUST BE REALIZED
-		void update_childs();
 		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+	public:
+		void update_childs();
 	};
 
 	class UIContainer : public UIObject {
@@ -224,17 +262,19 @@ namespace age {
 		};
 		double _time_base_ffmpeg = 0.0;
 		float _frame_rate_sec = 0.0f;
+	private:
+		void set_first_frame();
 	public:
 		~UIVideo();
 		UIVideo();
-		int get_duration() { return format_context->duration < 0 ? -1 : format_context->duration / AV_TIME_BASE; }
 		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+	public:
+		int get_duration() { return format_context->duration < 0 ? -1 : format_context->duration / AV_TIME_BASE; }
+	public:
 		int load_video_file(const char* file_name);
 		void restart_video();
 		void play();
 		void pause();
-	private:
-		void set_first_frame();
 	};
 
 }

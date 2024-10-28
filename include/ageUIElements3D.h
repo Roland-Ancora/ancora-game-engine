@@ -6,7 +6,8 @@
 //	images, texts, buttons and other in 3D space.
 // 
 //		This module has external dependencies: OpenGL, GLM.
-//		This module has dependencies: ageTexture2D, ageCamera.
+//		This module has dependencies: ageTexture2D, ageCamera, ageWindow,
+//	ageInputEventsControler, ageShaderProgram and basic AGE types.
 //
 //
 //########################################################################//
@@ -18,7 +19,6 @@
 #include <GLFW/glfw3.h>
 #include <../depends/glm/glm.hpp>
 #include <../depends/glm/gtc/matrix_transform.hpp>
-
 #include "ageTexture2D.h"
 #include "ageWindow.h"
 #include "ageCamera.h"
@@ -47,7 +47,7 @@ namespace age {
 	public:
 		static void Init();
 		virtual void show() {};
-
+	public:
 		void disable() { is_active = false; }
 		void enable() { is_active = true; }
 		void enable_camera_follow() { camera_follow = true; }
@@ -78,16 +78,19 @@ namespace age {
 	public:
 		UIImage3D() { glGenBuffers(1, &vboID); glGenVertexArrays(1, &vaoID); }
 		virtual void show();
+	public:
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		void set_alpha_channel(float alpha) { alpha_channel = alpha;  }
-
+		float get_alpha_channel() { return alpha_channel; }
+		void set_independ_rotation(float angle, rotate_vector vec) { independ_rotate_mat = glm::rotate(glm::mat4(1), angle, vec); }
+	public:
 		void set_texture(Texture2D* texture);
 		void set_size(float w, float h);
 		void set_size(float w);
 		void set_position(float x, float y, float z);
+		void move(float x, float y, float z);
 		void set_rotation(float angle, rotate_vector vec);
 		void set_rotation(glm::mat4 rotation_matrix);
-		void set_independ_rotation(float angle, rotate_vector vec) { independ_rotate_mat = glm::rotate(glm::mat4(1), angle, vec); }
 		void rotate(float angle, rotate_vector vec);
 		void rotate(glm::mat4 rotation_matrix);
 		void set_part_from_x_begin(float pc);
@@ -103,17 +106,14 @@ namespace age {
 		bool is_btn_pressed = false, is_btn_pressed_next_frame = false;
 	public:
 		UIButton3D() { UIImage3D(); }
-		UIButton3D(Texture2D* tex, Texture2D* focus_tex, Texture2D* pressed_tex, Texture2D* dis_tex)
-		{
-			UIImage3D(); set_default_texture(tex); focus_texture = focus_tex;  pressed_texture = pressed_tex;  disable_texture = dis_tex;
-		}
+		UIButton3D(Texture2D* tex, Texture2D* focus_tex, Texture2D* pressed_tex, Texture2D* dis_tex);
 		virtual void show();
-
+	public:
 		void set_default_texture(Texture2D* tex) { default_texture = tex; set_texture(default_texture); }
 		void set_focus_texture(Texture2D* tex) { focus_texture = tex; }
 		void set_pressed_texture(Texture2D* tex) { pressed_texture = tex; }
 		void set_disable_texture(Texture2D* tex) { disable_texture = tex; }
-		void set_textures(Texture2D* def, Texture2D* foc, Texture2D* prs, Texture2D* dis) { default_texture = def; set_texture(default_texture); focus_texture = foc; pressed_texture = prs; disable_texture = dis; }
+		void set_textures(Texture2D* def, Texture2D* foc, Texture2D* prs, Texture2D* dis);
 		bool is_pressed() { return is_btn_pressed; }
 		void disable_button() { is_btn_active = false; img_texture = disable_texture; }
 		void enable_button() { is_btn_active = true; img_texture = default_texture; }

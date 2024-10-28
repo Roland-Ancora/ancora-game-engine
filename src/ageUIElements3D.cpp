@@ -101,6 +101,12 @@ void UIImage3D::set_position(float x, float y, float z)
 	x_pos = x, y_pos = y, z_pos = z;
 }
 
+void UIImage3D::move(float x, float y, float z)
+{
+	translate_mat = glm::translate(translate_mat, glm::vec3(x, y, z));
+	x_pos += x, y_pos += y, z_pos += z;
+}
+
 void UIImage3D::set_rotation(float angle, rotate_vector vec)
 {
 	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
@@ -189,6 +195,15 @@ void UIImage3D::set_texture_position(float x, float y)
 
 
 
+UIButton3D::UIButton3D(Texture2D* tex, Texture2D* focus_tex, Texture2D* pressed_tex, Texture2D* dis_tex)
+{
+	UIImage3D(); 
+	set_default_texture(tex); 
+	focus_texture = focus_tex; 
+	pressed_texture = pressed_tex;
+	disable_texture = dis_tex;
+}
+
 void UIButton3D::show()
 {
 	if (is_active) {
@@ -220,4 +235,13 @@ void UIButton3D::show()
 	}
 	else
 		is_btn_pressed = false;
+}
+
+void UIButton3D::set_textures(Texture2D* def, Texture2D* foc, Texture2D* prs, Texture2D* dis)
+{ 
+	default_texture = def;
+	set_texture(default_texture);
+	focus_texture = foc;
+	pressed_texture = prs;
+	disable_texture = dis;
 }
