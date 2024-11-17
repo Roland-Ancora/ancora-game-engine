@@ -1,4 +1,4 @@
-//#####################################################################//
+//#################################################################//
 //
 //							PorgramClock
 //	
@@ -8,7 +8,7 @@
 //		The PorgramClock class has external dependencies: STD.
 //
 //
-//#####################################################################//
+//#################################################################//
 
 
 
@@ -27,7 +27,7 @@ namespace age {
 	public:
 		static double get_all_program_time() { return ProgramClock::all_program_time; }
 		static double get_eleapsed_frame_time() { return ProgramClock::eleapsed_time_since_last_frame; }
-
+	public:
 		static void init();
 		static void update();
 	};

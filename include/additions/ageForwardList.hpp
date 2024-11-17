@@ -1,3 +1,14 @@
+//#################################################################//
+// 
+//							ForwardList
+// 
+//		This module contains a ForwardList class realization.
+// 
+// 
+//#################################################################//
+
+
+
 #pragma once
 
 
@@ -21,8 +32,10 @@ namespace age {
 		int childs_count = 0;
 	public:
 		~ForwardList();
+	public:
 		void add_item(ItemM item);
 		ItemM* get_item(unsigned int id);
+	public:
 		int get_size() { return childs_count; }
 	};
 

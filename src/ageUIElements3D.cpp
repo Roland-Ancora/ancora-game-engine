@@ -1,4 +1,4 @@
-#include "../include/ageUIElements3D.h"
+#include "ageUIElements3D.h"
 
 
 
@@ -16,6 +16,7 @@ void UIElement3D::Init()
 	ui3d_sh_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_UI3D_VERTEX_SHADER, AGE_DEFAULT_UI3D_FRAGMENT_SHADER);
 	ui3d_sh_prog__alpha_channel_uniform = glGetUniformLocation(ui3d_sh_prog.get_shader_program_id(), AGE_UI3D_SHADER_UNIFORM_ALPHA_CHANNEL_NAME);
 }
+
 
 
 
@@ -59,8 +60,8 @@ void UIImage3D::show()
 void UIImage3D::set_texture(Texture2D* texture)
 {
 	img_texture = texture;
-	width = texture->get_width() / 100; // without / 100 it's will be very big
-	height = texture->get_height() / 100;
+	width = static_cast<float>(texture->get_width()) / 100.0f; // without / 100 it's will be very big
+	height = static_cast<float>(texture->get_height()) / 100.0f;
 	vert_tex_pos_data[0] = -(width * shown_part_from_x_begin / 2);
 	vert_tex_pos_data[4] = width * shown_part_from_x_begin / 2;
 	vert_tex_pos_data[8] = width * shown_part_from_x_begin / 2;
@@ -211,7 +212,7 @@ void UIButton3D::show()
 
 		if (is_btn_active) {
 			glm::vec2 cursor_pos = Window::get_active_window()->get_cursor_position();
-			glm::vec3 mouse_pos_in_world = Camera3D::get_active_3d_camera()->get_pixel_position_in_world_coords(cursor_pos.x, cursor_pos.y, Window::get_active_window()->get_height());
+			glm::vec3 mouse_pos_in_world = Camera3D::get_active_3d_camera()->get_pixel_position_in_world_coords(static_cast<int>(cursor_pos.x), static_cast<int>(cursor_pos.y), Window::get_active_window()->get_height());
 			
 			glm::vec4 mouse_pos_in_world_vec(mouse_pos_in_world[0], mouse_pos_in_world[1], mouse_pos_in_world[2], 1.0f);
 			glm::mat4 inverse_finally_mat = glm::inverse(finally_mat);

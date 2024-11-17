@@ -1,24 +1,25 @@
-//########################################################################//
+//#################################################################//
 //
 //								UIElements3D
 //	
-//		The UIElements3D module is responsible for showing UI elements like
-//	images, texts, buttons and other in 3D space.
+//		The UIElements3D module is responsible for showing UI 
+//	elements like images, texts, buttons and other in 3D space.
 // 
 //		This module has external dependencies: OpenGL, GLM.
-//		This module has dependencies: ageTexture2D, ageCamera, ageWindow,
-//	ageInputEventsControler, ageShaderProgram and basic AGE types.
+//		This module has dependencies: ageTexture2D, ageCamera,
+//	ageWindow, ageInputEventsControler, ageShaderProgram and basic
+//	AGE types.
 //
 //
-//########################################################################//
+//#################################################################//
 
 
 
 #pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <../depends/glm/glm.hpp>
-#include <../depends/glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "ageTexture2D.h"
 #include "ageWindow.h"
 #include "ageCamera.h"

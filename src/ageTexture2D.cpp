@@ -1,5 +1,5 @@
-#include "../include/ageTexture2D.h"
-#include <../depends/stb_image.h>
+#include "ageTexture2D.h"
+#include <stb_image.h>
 
 
 
@@ -21,7 +21,7 @@ int Texture2D::load_from_file(const char* file_name, texture_filter filter)
 		stbi_image_free(img);
 	img = stbi_load(file_name, &tex_width, &tex_height, &tex_channels, 0);
 	if (img == NULL) {
-		printf("Error: %s image was not load!\n", file_name);
+		printf("AGE::ERROR::TEXTURE2D::LOAD:: %s image was not load!\n", file_name);
 		return -1;
 	}
 	texture_width = tex_width;

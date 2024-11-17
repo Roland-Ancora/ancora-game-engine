@@ -16,13 +16,6 @@
 //		The Window class has GLFWwindow* operator. That's need for backward
 //	compatibillity with GLFW functions.
 // 
-// 
-// 
-// 
-//			NOTES -----------
-//				Window should contains camera object, because if window
-//	will resize, it must to changes aspects ratio of camera and other.
-// 
 //
 //##########################################################################//
 
@@ -31,7 +24,6 @@
 #pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 #include "ageCamera.h"
 #include "ageCONSTANTS.h"
 
@@ -45,19 +37,18 @@ namespace age {
 		static Window* active_window;
 	public:
 		Window(int window_width, int window_height, const char window_title[]);
-
+		static Window* get_active_window() { return active_window; }
+	public:
 		int is_close() { return glfwWindowShouldClose(window); }
 		int get_width() { return width; }
 		int get_height() { return height; }
-
-		static Window* get_active_window() { return active_window; }
-
+	public:
 		void close();
 		void update();
 		void set_fullscreen();
 		void add_camera(Camera* camera);
 		glm::vec2 get_cursor_position();
-
+	public:
 		operator GLFWwindow* () const { return window; }
 	};
 

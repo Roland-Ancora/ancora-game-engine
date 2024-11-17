@@ -1,20 +1,21 @@
-//########################################################################//
+//#################################################################//
 //
 //									UI
 //	
-//		The UI module is responsible for showing UI elements on display.
-//	Implemented as a separate framebuffer, which, after rendering, is 
-//	superimposed on the main framebuffer. All objects are UIObject and
-//	can contain dependent children. The root object is a singltone
-//	UIWindow object.
+//		The UI module is responsible for showing UI elements on 
+//	display. Implemented as a separate framebuffer, which, after
+//	rendering, is superimposed on the main framebuffer. All objects
+//	are UIObject and can contain dependent children. The root object
+//	is a singltone UIWindow object.
 // 
-//		This module has external dependencies: OpenGL, GLM, STD, FFmpeg.
-//		This module has dependencies: ageTexture2D, ageCamera, ageWindow,
-//	ageInputEventsControler, ageFont, ageShaderProgram and 
-//	ageProgrsmClock.
+//		This module has external dependencies: OpenGL, GLM, STD,
+//	FFmpeg.
+//		This module has dependencies: ageTexture2D, ageCamera,
+//	ageWindow, ageInputEventsControler, ageFont, ageShaderProgram
+//	and ageProgrsmClock.
 //
 //
-//########################################################################//
+//#################################################################//
 
 
 
@@ -22,7 +23,7 @@
 #include <cinttypes>
 #include <iostream>
 #include <vector>
-#include <../depends/glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 extern "C"
 {
 #include <libavcodec/avcodec.h>
@@ -80,7 +81,7 @@ namespace age {
 		float get_height() { return height; }
 		float get_z_val() { return z_var; }
 		float get_alpha() { return alpha; }
-		int get_childs_count() { return childs.size(); }
+		int get_childs_count() { return static_cast<int>(childs.size()); }
 		UIObject* get_child(int id) { return childs[id]; }
 		bool is_focused() { return focused; }
 		void set_alpha(float a) { alpha = a; }
@@ -204,7 +205,7 @@ namespace age {
 	public:
 		void set_font(Font* f) { font = f; }
 		void set_font_size(float size) { font_t_size = size; distance_between_lines = font_t_size / 2; calculate_str_end_symbol_nums_w_words(); }
-		int get_lines_count() { return str_eds_symbol_nums.size(); }
+		int get_lines_count() { return static_cast<int>(str_eds_symbol_nums.size()); }
 	public:
 		void set_string(std::string string);
 	};
@@ -269,7 +270,7 @@ namespace age {
 		UIVideo();
 		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
 	public:
-		int get_duration() { return format_context->duration < 0 ? -1 : format_context->duration / AV_TIME_BASE; }
+		int get_duration() { return static_cast<int>(format_context->duration) < 0 ? -1 : static_cast<int>(format_context->duration) / AV_TIME_BASE; }
 	public:
 		int load_video_file(const char* file_name);
 		void restart_video();

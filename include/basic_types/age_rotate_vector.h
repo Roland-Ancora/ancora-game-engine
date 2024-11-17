@@ -1,5 +1,19 @@
+//#################################################################//
+// 
+//							rotate_vector
+// 
+//		This module contains type for defenition rotation axis for
+//	scene objects.
+// 
+//		The Font module has external dependencies: GLM.
+// 
+// 
+//#################################################################//
+
+
+
 #pragma once
-#include "../../depends/glm/glm.hpp"
+#include "glm/glm.hpp"
 
 
 

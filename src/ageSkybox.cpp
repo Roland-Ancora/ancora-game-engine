@@ -1,4 +1,4 @@
-#include "../include/ageSkybox.h"
+#include "ageSkybox.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <../depends/stb_image.h>
 
@@ -109,7 +109,7 @@ void Skybox::load_from_files(const char* file_names[6])
 			stbi_image_free(data);
 		data = stbi_load(file_names[i], &tex_width, &tex_height, &tex_channels, 0);
 		if (data == NULL)
-			printf("Error: %s image was not load!\n", file_names[0]);
+			printf("AGE::ERROR::SKYBOX::LOAD:: %s image was not load!\n", file_names[0]);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, tex_width, tex_height,
 			0, tex_channels == 4 ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
 	}

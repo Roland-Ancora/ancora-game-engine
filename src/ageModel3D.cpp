@@ -1,4 +1,4 @@
-#include "../include/ageModel3D.h"
+#include "ageModel3D.h"
 
 
 
@@ -131,8 +131,8 @@ glm::mat4 Model3D::get_reverse_matrix()
 void Model3D_Anim::update_anim_matrix()
 {
 	int prev_node = anim_last_node - 1;
-	float time_keys_vals_residual = anim->nodes[anim_last_node].time_val - anim->nodes[prev_node].time_val;
-	float time_progress_btw_nodes = (now_play_time - anim->nodes[prev_node].time_val) / time_keys_vals_residual;
+	float time_keys_vals_residual = static_cast<float>(anim->nodes[anim_last_node].time_val - anim->nodes[prev_node].time_val);
+	float time_progress_btw_nodes = static_cast<float>((now_play_time - anim->nodes[prev_node].time_val) / time_keys_vals_residual);
 	
 	// Position calculation
 	float vals_keys_pos_x_residual = anim->nodes[anim_last_node].position[0] - anim->nodes[prev_node].position[0];

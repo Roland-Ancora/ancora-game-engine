@@ -1,4 +1,4 @@
-#include "../include/ageShaderProgram.h"
+#include "ageShaderProgram.h"
 
 
 
@@ -11,13 +11,13 @@ char* load_shader_as_srting(const char* file_name)
 	FILE* shader_file;
 	fopen_s(&shader_file, file_name, "r");
 	if (shader_file == 0) {
-		printf("Error: can't load shader file: %s!\n", file_name);
+		printf("AGE::ERROR::SHADERPROGRAM::OPEN:: Can't open shader file: %s!\n", file_name);
 		exit(AGE_SHADER_OPEN_ERROR);
 	}
 	char shader_string[AGE_SHADER_PROGRAM_MAX_LENGHT];
 	char ch = 0;
 	int cnt = 0;
-	while ((ch = fgetc(shader_file)) != EOF) {
+	while ((ch = static_cast<char>(fgetc(shader_file))) != EOF) {
 		shader_string[cnt] = ch;
 		cnt++;
 	}
@@ -30,7 +30,7 @@ GLuint create_shader_gl(const char* file_name, GLenum shader_type)
 {
 	GLuint shader = glCreateShader(shader_type);
 	if (shader == 0)
-		printf("Error: can't create shader. [%s]\n", file_name);
+		printf("AGE::ERROR::SHADERPROGRAM::CREATE:: Can't create shader. [%s]\n", file_name);
 	char* basic_vert_shader_string = load_shader_as_srting(file_name);
 	const GLchar* basic_vert_shader_string_arr[] = { basic_vert_shader_string };
 	glShaderSource(shader, 1, basic_vert_shader_string_arr, NULL);
@@ -39,7 +39,7 @@ GLuint create_shader_gl(const char* file_name, GLenum shader_type)
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE)
 	{
-		fprintf(stderr, "Error: shader compilation failed. [%s]\n", file_name);
+		fprintf(stderr, "AGE::ERROR::SHADERPROGRAM::CREATE:: Shader compilation failed. [%s]\n", file_name);
 		GLint logLen;
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLen);
 		if (logLen > 0)
@@ -58,14 +58,14 @@ GLuint create_shader_program_gl(GLuint shaders[], int shader_count)
 {
 	GLuint programHandle = glCreateProgram();
 	if (0 == programHandle)
-		fprintf(stderr, "Error: can't create program object.\n");
+		fprintf(stderr, "AGE::ERROR::SHADERPROGRAM::CREATE:: Can't create program object.\n");
 	for (int i = 0; i < shader_count; i++)
 		glAttachShader(programHandle, shaders[i]);
 	glLinkProgram(programHandle);
 	GLint status_prog_comp;
 	glGetProgramiv(programHandle, GL_LINK_STATUS, &status_prog_comp);
 	if (GL_FALSE == status_prog_comp) {
-		fprintf(stderr, "Error: failed to link shader program!\n");
+		fprintf(stderr, "AGE::ERROR::SHADERPROGRAM::CREATE:: Failed to link shader program!\n");
 		GLint logLen;
 		glGetProgramiv(programHandle, GL_INFO_LOG_LENGTH, &logLen);
 		if (logLen > 0)

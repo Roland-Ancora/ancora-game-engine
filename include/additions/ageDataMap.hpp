@@ -1,3 +1,17 @@
+//#################################################################//
+// 
+//							DataMap
+// 
+//		The DataMap is class that contains dynamic map of specified
+//	type elements, consisting of square segments.
+// 
+//		The DataMap module has external dependencies: STD.
+// 
+// 
+//#################################################################//
+
+
+
 #pragma once
 #include <math.h>
 #include <iostream>
@@ -11,18 +25,23 @@ class DataMap {
 	unsigned int segment_size;
 	ItemT** map;
 	DataMap<ItemT>* segments_near[4] { 0, 0, 0, 0 };
+private:
 	void clear_segments_near(DataMap<ItemT>* from_segment);
 public:
 	DataMap(unsigned int segment_map_size);
+public:
+	int get_segment_size() const { return segment_size; }
+	DataMap<ItemT>* get_segment(segments_sides side) const { return segments_near[side]; }
+public:
+	void create_segments(unsigned int count, segments_sides dir);
+	void delete_other_segments();
+	void resize_origin_segment(unsigned int segment_map_size);
+public:
 	ItemT* operator() (int x, int y);
 	ItemT* operator() (float x, float y);
 	ItemT* operator() (double x, double y);
-	void create_segments(unsigned int count, segments_sides dir);
-	int get_segment_size() const { return segment_size; }
-	DataMap<ItemT>* get_segment(segments_sides side) const { return segments_near[side]; }
-	void delete_other_segments();
-	void resize_origin_segment(unsigned int segment_map_size);
 };
+
 
 
 

@@ -1,4 +1,4 @@
-#include "../include/ageFont.h"
+#include "ageFont.h"
 
 
 
@@ -22,10 +22,10 @@ void Font::load_font(const char* file_name)
 {
     float font_size = 148.0f;
     if (FT_Init_FreeType(&library))
-        printf("Error with creating FreeType initialize\n");
+        printf("AGE::ERROR::FONT:: Error with creating FreeType initialize\n");
     if (FT_New_Face(library, file_name, 0, &font_face))
-        printf("Error with load font\n");
-    FT_Set_Pixel_Sizes(font_face, 0, font_size);
+        printf("AGE::ERROR::FONT:: Error with load font\n");
+    FT_Set_Pixel_Sizes(font_face, 0, static_cast<FT_UInt>(font_size));
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
@@ -34,7 +34,7 @@ void Font::load_font(const char* file_name)
         // Load character glyph
         if (FT_Load_Char(font_face, c, FT_LOAD_RENDER))
         {
-            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            std::cout << "AGE::ERROR::FONT:: Failed to load Glyph" << std::endl;
             continue;
         }
         // Generate texture

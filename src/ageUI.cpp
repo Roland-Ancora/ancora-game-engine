@@ -1,4 +1,4 @@
-#include "../include/ageUI.h"
+#include "ageUI.h"
 
 
 
@@ -175,7 +175,7 @@ UIWindow::UIWindow(std::uint16_t resolution_w, std::uint16_t resolution_h)
 {
 	active_ui_window = this;
 	main_shader_prog_ui = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_VERTEX_SHADER, AGE_DEFAULT_UI_FRAGMENT_SHADER);
-	main_shader_fin_prog_ui = ShaderProgram::create_shader_program("resources/shaders/age_main_ui_fin_texture_shader.vert", "resources/shaders/age_main_ui_fin_texture_shader.frag");
+	main_shader_fin_prog_ui = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_FINNALY_TEXTURE_VERTEX_SHADER, AGE_DEFAULT_UI_FINNALY_TEXTURE_FRAGMENT_SHADER);
 	alpha_uniform_loc = glGetUniformLocation(main_shader_prog_ui.get_shader_program_id(), "alpha");
 
 	aspects_ratio = float(resolution_h) / resolution_w;
@@ -202,7 +202,7 @@ UIWindow::UIWindow(std::uint16_t resolution_w, std::uint16_t resolution_h)
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		printf("ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n");
+		printf("AGE::ERROR::UI::FRAMEBUFFER:: Framebuffer is not complete!\n");
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // буфер трафарета не используется
@@ -517,7 +517,6 @@ void UIText::calculate_str_end_symbol_nums_w_words()
 {
 	str_eds_symbol_nums.clear();
 	float line_size_counter = 0.0f;
-	bool is_first_word_in_line = true;
 	float width_max_line = 0.0f, width_now = 0.0f;
 	for (int i = 0; i < str.size(); i++) {
 		if (is_next_word_bigger_then_width(i, line_size_counter)) {
@@ -647,7 +646,6 @@ void UIContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 void UIContainer::set_size(float w, float h)
 {
 	float new_scale_w = w / width;
-	float new_scale_h = h / height;
 	height = h;
 	width = w;
 	scale_mat = glm::scale(scale_mat, glm::vec3(1.0f, new_scale_w, new_scale_w));
@@ -693,7 +691,6 @@ UIVideo::UIVideo()
 void UIVideo::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 {
 	double now_time = ProgramClock::get_eleapsed_frame_time();
-	double duration = (double)frame[video_stream_id]->pkt_duration * _time_base_ffmpeg;
 	ms_passed_after_last_frame += now_time;
 
 	if (ms_passed_after_last_frame >= _frame_rate_sec) {
@@ -701,10 +698,10 @@ void UIVideo::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 			if (packet->stream_index == video_stream_id_in_context) {
 				int ret = avcodec_send_packet(codec_context[video_stream_id], packet);
 				if (ret < 0) {
-					printf("AGE::ERROR::UIVideo::set_first_frame::Can't send video packet\n");
+					printf("AGE::ERROR::UIVideo::set_first_frame:: Can't send video packet\n");
 					break;
 				}
-				int ret2 = avcodec_receive_frame(codec_context[video_stream_id], frame[0]);
+				//int ret2 = avcodec_receive_frame(codec_context[video_stream_id], frame[0]);
 				if (frame[video_stream_id]->width > 0) {
 					sws_scale(sws_cntx, frame[0]->data, frame[0]->linesize, 0, codec_context[video_stream_id]->height, frameRGB->data, frameRGB->linesize);
 
@@ -763,11 +760,11 @@ void UIVideo::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 int UIVideo::load_video_file(const char* file_name)
 {
 	if (avformat_open_input(&format_context, file_name, NULL, 0) != 0) {
-		printf("AGE::ERROR::UIVideo::load_video_file::Can't open %s video file\n", file_name);
+		printf("AGE::ERROR::UIVideo::load_video_file:: Can't open %s video file\n", file_name);
 		return AGE_UI_VIDEO_OPEN_FILE_ERROR;
 	}
 	if (avformat_find_stream_info(format_context, NULL) < 0) {
-		printf("AGE::ERROR::UIVideo::load_video_file::Can't find stream in %s video file\n", file_name);
+		printf("AGE::ERROR::UIVideo::load_video_file:: Can't find stream in %s video file\n", file_name);
 		return AGE_UI_VIDEO_STREAM_NOT_FOUND;
 	}
 
@@ -778,13 +775,13 @@ int UIVideo::load_video_file(const char* file_name)
 		if (local_codec == NULL)
 			continue;
 		if (local_codec_param->codec_type == AVMEDIA_TYPE_VIDEO) {
-			video_stream_id_in_context = i;
+			video_stream_id_in_context = static_cast<int8_t>(i);
 			codec_parameters[video_stream_id] = local_codec_param;
 			codec[video_stream_id] = local_codec;
 			codec_context[video_stream_id] = avcodec_alloc_context3(codec[video_stream_id]);
 			avcodec_parameters_to_context(codec_context[video_stream_id], codec_parameters[video_stream_id]);
 			if (avcodec_open2(codec_context[video_stream_id], codec[video_stream_id], NULL) < 0) {
-				printf("AGE::ERROR::UIVideo::load_video_file::Can't open appropriate video codec in %s video file\n", file_name);
+				printf("AGE::ERROR::UIVideo::load_video_file:: Can't open appropriate video codec in %s video file\n", file_name);
 				return AGE_UI_VIDEO_APPROPRIATE_VIDEO_CODEC_DOES_NOT_OPEN;
 			}
 		}
@@ -803,7 +800,7 @@ int UIVideo::load_video_file(const char* file_name)
 	}
 
 	if (codec_parameters[0] == 0) {
-		printf("AGE::ERROR::UIVideo::load_video_file::Can't find video stream in %s video file\n", file_name);
+		printf("AGE::ERROR::UIVideo::load_video_file:: Can't find video stream in %s video file\n", file_name);
 		return AGE_UI_VIDEO_STREAM_NOT_FOUND_OR_UNSUPPORTED_CODEC;
 	}
 	avpicture_alloc((AVPicture*)frameRGB, AV_PIX_FMT_RGB24, codec_context[video_stream_id]->width, codec_context[video_stream_id]->height);
@@ -823,7 +820,7 @@ int UIVideo::load_video_file(const char* file_name)
 	);
 
 	_time_base_ffmpeg = (double)format_context->streams[video_stream_id_in_context]->time_base.num / (double)format_context->streams[video_stream_id_in_context]->time_base.den;
-	_frame_rate_sec = 2.0f / av_q2d(format_context->streams[video_stream_id_in_context]->avg_frame_rate);
+	_frame_rate_sec = 2.0f / static_cast<float>(av_q2d(format_context->streams[video_stream_id_in_context]->avg_frame_rate));
 	set_first_frame();
 
 	aspects_ratio = float(codec_context[video_stream_id]->height) / codec_context[video_stream_id]->width;
@@ -847,10 +844,10 @@ void UIVideo::set_first_frame()
 		if (packet->stream_index == video_stream_id_in_context) {
 			int ret = avcodec_send_packet(codec_context[video_stream_id], packet);
 			if (ret < 0) {
-				printf("AGE::ERROR::UIVideo::set_first_frame::Can't send video packet\n");
+				printf("AGE::ERROR::UIVideo::set_first_frame:: Can't send video packet\n");
 				break;
 			}
-			int ret2 = avcodec_receive_frame(codec_context[video_stream_id], frame[0]);
+			//int ret2 = avcodec_receive_frame(codec_context[video_stream_id], frame[0]);
 			if (frame[video_stream_id]->width > 0) {
 				sws_scale(sws_cntx, frame[0]->data, frame[0]->linesize, 0, codec_context[video_stream_id]->height, frameRGB->data, frameRGB->linesize);
 

@@ -1,4 +1,4 @@
-#include "../include/ageFoton.h"
+#include "ageFoton.h"
 
 
 

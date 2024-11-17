@@ -1,11 +1,27 @@
+//#################################################################//
+// 
+//								Font
+// 
+//		Font module is contain class Font and struct Character for
+//	loading and store fonts. Uses FreeType library and supports
+//	all font formats that supports FreeType.
+// 
+//		The Font module has external dependencies: FreeType, STD,
+//	OpenGL, GLM.
+//		The Font module has dependencies: ShaderProgram.
+// 
+// 
+//#################################################################//
+
+
+
 #pragma once
-#include "ft2build.h"
+#include <ft2build.h>
 #include FT_FREETYPE_H
 #include <map>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <../depends/glm/glm.hpp>
-
+#include <glm/glm.hpp>
 #include "ageShaderProgram.h"
 #include "ageCONSTANTS.h"
 
@@ -28,10 +44,12 @@ namespace age {
 		static ShaderProgram font_sh_prog;
 	public:
 		std::map<GLchar, Character> Characters;
-		static void Init();
-		static ShaderProgram* get_shader_program() { return &font_sh_prog; }
+	public:
 		Font(const char* file_name);
 		Font() {}
+		static void Init();
+		static ShaderProgram* get_shader_program() { return &font_sh_prog; }
+	public:
 		void load_font(const char* file_name);
 	};
 

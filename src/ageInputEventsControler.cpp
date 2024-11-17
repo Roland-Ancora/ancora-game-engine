@@ -1,4 +1,4 @@
-#include "../include/ageInputEventsControler.h"
+#include "ageInputEventsControler.h"
 
 
 
@@ -25,8 +25,8 @@ void InputEventsControler::Init()
 
 void InputEventsControler::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	scroll_x = xoffset;
-	scroll_y = yoffset;
+	scroll_x = static_cast<float>(xoffset);
+	scroll_y = static_cast<float>(yoffset);
 	is_scroll_callback_called = true;
 }
 

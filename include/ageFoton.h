@@ -1,7 +1,23 @@
+//#################################################################//
+// 
+//								Foton
+// 
+//		Foton module is contain classes for creating a light on
+//	scene.
+// 
+//		The Foton module has external dependencies: OpenGL, GLM.
+//		The Font module has dependencies: ShaderProgram, Camera,
+//	Window.
+// 
+// 
+//#################################################################//
+
+
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <../depends/glm/glm.hpp>
-#include <../depends/glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "ageShaderProgram.h"
 #include "ageCamera.h"
 #include "ageWindow.h"

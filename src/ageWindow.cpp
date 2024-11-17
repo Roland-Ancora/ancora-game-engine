@@ -1,4 +1,4 @@
-#include "../include/ageWindow.h"
+#include "ageWindow.h"
 
 
 
@@ -51,7 +51,7 @@ void Window::set_fullscreen()
 // Set camera aspects ratio based on window dimensions.
 void Window::add_camera(Camera *camera)
 {
-	camera->set_aspects_ratio(width, height);
+	camera->set_aspects_ratio(static_cast<float>(width), static_cast<float>(height));
 }
 
 glm::vec2 Window::get_cursor_position()

@@ -1,4 +1,4 @@
-#include "../include/ageCamera.h"
+#include "ageCamera.h"
 
 
 
@@ -28,7 +28,7 @@ void Camera::create_frame_buffer(unsigned int resolution_w, unsigned int resolut
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		printf("ERROR::FRAMEBUFFER:: Framebuffer is not complete!\n");
+		printf("AGE::ERROR::CAMERA::FRAMEBUFFER:: Framebuffer is not complete!\n");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -99,7 +99,7 @@ void Camera2D::clear_buffers()
 // x - width, y - height.
 void Camera2D::set_aspects_ratio(float x, float y)
 {
-	aspects_ratio = x / y;
+	Camera::set_aspects_ratio(x, y);
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	MVP_matrix = projection_matrix * view_matrix * *model_matrix;
 	glUniformMatrix4fv(main_shader_prog.get_MVP_matrix_location(), 1, GL_FALSE, &MVP_matrix[0][0]);
@@ -190,7 +190,7 @@ void Camera3D::clear_buffers()
 
 void Camera3D::set_aspects_ratio(float x, float y)
 {
-	aspects_ratio = x / y;
+	Camera::set_aspects_ratio(x, y);
 	if (camera_mode == AGE_CAMERA_PERSPECTIVE)
 		projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
 	else
