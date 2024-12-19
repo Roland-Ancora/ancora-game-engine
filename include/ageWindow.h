@@ -48,6 +48,9 @@ namespace age {
 		void set_fullscreen();
 		void add_camera(Camera* camera);
 		glm::vec2 get_cursor_position();
+		void set_cursor_position(float x, float y);
+		void cursor_hide();
+		void cursor_show();
 	public:
 		operator GLFWwindow* () const { return window; }
 	};

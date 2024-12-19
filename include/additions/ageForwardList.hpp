@@ -24,6 +24,8 @@ namespace age {
 		ItemNode item_;
 		ForwardListNode* next_node = 0;
 		friend class ForwardList<ItemNode>;
+	public:
+		void clear_next_node();
 	};
 
 	template <class ItemM>
@@ -35,18 +37,27 @@ namespace age {
 	public:
 		void add_item(ItemM item);
 		ItemM* get_item(unsigned int id);
+		void clear();
 	public:
 		int get_size() { return childs_count; }
 	};
 
 
-	
+
 	template <class ItemNode>
 	ForwardListNode<ItemNode>::~ForwardListNode()
 	{
 		if (next_node != 0)
 			delete next_node;
+	}
 
+	template <class ItemNode>
+	void ForwardListNode<ItemNode>::clear_next_node()
+	{
+		if (next_node != 0) {
+			next_node->clear_next_node();
+			delete next_node;
+		}
 	}
 
 	template <class ItemM>
@@ -76,5 +87,15 @@ namespace age {
 			i++;
 		}
 		return &now_node->item_;
+	}
+
+	template <class ItemM>
+	void ForwardList<ItemM>::clear()
+	{
+		if (first_node != 0) {
+			first_node->clear_next_node();
+			delete first_node;
+		}
+		childs_count = 0;
 	}
 }

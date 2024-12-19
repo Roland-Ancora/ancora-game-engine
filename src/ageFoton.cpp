@@ -24,15 +24,20 @@ Foton::Foton()
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	GLuint default_color_processing_subroutine = glGetSubroutineIndex(Camera3D::get_active_3d_camera()->get_active_shader()->get_shader_program_id(), GL_FRAGMENT_SHADER, "global_light");
+	glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &default_color_processing_subroutine);
+
 	light_space_matrix_loc = glGetUniformLocation(depth_sg.get_shader_program_id(), "lightSpaceMatrix");
 	default_fogging_loc = glGetUniformLocation(Camera3D::get_active_3d_camera()->get_active_shader()->get_shader_program_id(), "default_fogging");
 	shadow_intensity_loc = glGetUniformLocation(Camera3D::get_active_3d_camera()->get_active_shader()->get_shader_program_id(), "shadow_intensity");
 	global_light_color_loc = glGetUniformLocation(Camera3D::get_active_3d_camera()->get_active_shader()->get_shader_program_id(), "global_light_color");
 	global_light_minimal_color_loc = glGetUniformLocation(Camera3D::get_active_3d_camera()->get_active_shader()->get_shader_program_id(), "global_light_min_color");
+	global_light_pos_loc = glGetUniformLocation(Camera3D::get_active_3d_camera()->get_active_shader()->get_shader_program_id(), "global_light_pos");
 	glUniform1f(default_fogging_loc, default_fogging);
 	glUniform1f(shadow_intensity_loc, shadow_intensity);
 	glUniform3f(global_light_color_loc, global_light_color.x, global_light_color.y, global_light_color.z);
 	glUniform3f(global_light_minimal_color_loc, global_light_minimal_color.x, global_light_minimal_color.y, global_light_minimal_color.z);
+	glUniform3f(global_light_pos_loc, global_light_pos.x, global_light_pos.y, global_light_pos.z);
 }
 
 void Foton::set_default_fogging(float fogging)
@@ -91,6 +96,7 @@ void Foton::end()
 void Foton::set_global_light_position(glm::vec3 pos)
 {
 	global_light_pos = pos;
+	glUniform3f(global_light_pos_loc, global_light_pos.x, global_light_pos.y, global_light_pos.z);
 }
 
 void Foton::set_global_light_center(glm::vec3 center)

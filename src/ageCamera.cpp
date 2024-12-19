@@ -162,6 +162,8 @@ Camera3D::Camera3D()
 	active_3d_camera = this;
 	glEnable(GL_DEPTH_TEST);
 	main_shader_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_VERTEX_SHADER, AGE_DEFAULT_3D_FRAGMENT_SHADER);
+	GLuint default_color_processing_subroutine = glGetSubroutineIndex(main_shader_prog.get_shader_program_id(), GL_FRAGMENT_SHADER, "default_color_only");
+	glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &default_color_processing_subroutine);
 	camera_mode = AGE_CAMERA_PERSPECTIVE;
 	projection_matrix = glm::perspective(glm::radians(persp_fov), aspects_ratio, persp_z_near, persp_z_far);
 	glUseProgram(main_shader_prog.get_shader_program_id());

@@ -37,6 +37,7 @@ namespace age {
 		GLuint shadow_intensity_loc;
 		GLuint global_light_color_loc;
 		GLuint global_light_minimal_color_loc;
+		GLuint global_light_pos_loc;
 
 		float near_plane = 1.0f, far_plane = 70.5f;
 		float ortho_width_x = 20.0f, ortho_width_y = 20.0f;

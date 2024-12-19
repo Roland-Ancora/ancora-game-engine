@@ -60,3 +60,18 @@ glm::vec2 Window::get_cursor_position()
 	glfwGetCursorPos(window, &pos_x, &pos_y);
 	return glm::vec2(pos_x, pos_y);
 }
+
+void Window::set_cursor_position(float x, float y)
+{
+	glfwSetCursorPos(window, x, y);
+}
+
+void Window::cursor_hide()
+{
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void Window::cursor_show()
+{
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}

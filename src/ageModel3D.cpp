@@ -8,6 +8,11 @@ using namespace age;
 
 void Model3D::opengl_draw()
 {
+	GLuint c_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "color");
+	GLuint ci_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "color_intensity");
+	glUniform3f(c_loc, color.b, color.g, color.b);
+	glUniform1f(ci_loc, color_intensity);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model_data->indices_cnt * sizeof(unsigned int), model_data->indices, GL_STATIC_DRAW);
 

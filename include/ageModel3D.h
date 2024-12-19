@@ -15,6 +15,12 @@
 //	Model3dGroupNode. It turns out that Model3dGroupNode must be
 //	private class, and must be available for Model3dGroup. 
 //	Therefore, the mechanism of friendly classes is used.
+// 
+// 
+// 
+//			NOTES
+//		The opengl_draw method finding uniform locations every
+//	frame.
 //
 //
 //#################################################################//
@@ -45,6 +51,8 @@ namespace age {
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
 		float x_rot = 0.0f, y_rot = 0.0f, z_rot = 0.0f;
+		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
+		float color_intensity = 0.0f;
 		GLuint vboIDs[4];
 		GLuint vaoID;
 	protected:
@@ -56,7 +64,11 @@ namespace age {
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
 		glm::mat4 get_model_matrix() { return translate_mat * rotate_mat * scale_mat; }
+		glm::vec3 get_color() { return color; }
 		Model3dData* get_model_data() { return model_data; }
+		void set_color(float r, float g, float b) { color = glm::vec3(r, g, b); }
+		float get_color_intensity() { return color_intensity; }
+		void set_color_intensity(float intens) { color_intensity = intens; }
 	public:
 		void set_model_3d_data(Model3dData* model_3d_data);
 		void set_position(float x, float y, float z);
