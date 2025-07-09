@@ -65,4 +65,11 @@ void CollidesControler::update()
 				dynamic_obbs[i].answr.collide = true;
 		}
 	}
+	for (int i = 0; i < dynamic_obbs.size(); i++) {
+		for (int i2 = i + 1; i2 < dynamic_obbs.size(); i2++)
+			if ((*dynamic_obbs[i].obb).is_collide(*dynamic_obbs[i2].obb) || (*dynamic_obbs[i2].obb).is_collide(*dynamic_obbs[i].obb)) {
+				dynamic_obbs[i].answr.collide = true;
+				dynamic_obbs[i2].answr.collide = true;
+			}
+	}
 }

@@ -229,6 +229,23 @@ namespace age {
 		virtual void set_size(float w, float h);
 	};
 
+	class UISlider : public UIImage {
+		UIButton s_btn;
+		float border_x1 = 0.0f, border_x2 = 1.0f;
+		bool btn_hold = false;
+		float cursor_last_pos_x = 0.0f;
+	public:
+		UISlider() { s_btn.set_parent_object(this); }
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+	public:
+		void set_slider_button_texture_normal(Texture2D* tex) { s_btn.set_default_texture(tex); }
+		void set_slider_button_texture_focus(Texture2D* tex) { s_btn.set_focus_texture(tex); }
+		void set_slider_button_texture_press(Texture2D* tex) { s_btn.set_pressed_texture(tex); }
+		void set_slider_button_borders(float x1, float x2) { border_x1 = x1, border_x2 = x2; }
+		void set_slider_value(float val) { s_btn.set_position_x((100.0f - (border_x1 + border_x2)) * val + border_x1); }
+		float get_slider_value() { return (s_btn.get_position_x() - border_x1) / (100.0f - border_x1 - border_x2); }
+	};
+
 	class UIVideo : public UIObject {
 		Texture2D video_texture;
 		AVFormatContext* format_context;

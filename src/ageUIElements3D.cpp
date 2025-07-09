@@ -27,7 +27,7 @@ void UIImage3D::show()
 	glUniform1f(ui3d_sh_prog__alpha_channel_uniform, alpha_channel);
 	if (camera_follow)
 		set_rotation(Camera3D::get_active_3d_camera()->get_rotation().x, AGE_ROTATE_AROUND_Y);
-	finally_mat = translate_mat * rotate_mat * independ_rotate_mat * scale_mat;
+	finally_mat = translate_mat * rotate_mat * independ_translate_mat * independ_rotate_mat * scale_mat;
 	if (parent_element != 0)
 		finally_mat = parent_element->_get_model_matrix() * finally_mat;
 	Camera::get_active_camera()->set_model_matrix(&finally_mat);

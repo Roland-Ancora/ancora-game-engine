@@ -66,6 +66,12 @@ void Camera::use_main_shader()
 	glUseProgram(now_active_shader->get_shader_program_id());
 }
 
+void Camera::set_shader_subroutine(int shader_type, const char* name)
+{
+	GLuint s = glGetSubroutineIndex(now_active_shader->get_shader_program_id(), shader_type, name);
+	glUniformSubroutinesuiv(shader_type, 1, &s);
+}
+
 
 
 

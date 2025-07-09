@@ -36,6 +36,7 @@ namespace age {
 		bool is_active = true;
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		glm::mat4 independ_rotate_mat = glm::mat4(1);
+		glm::mat4 independ_translate_mat = glm::mat4(1);
 		float width = 1.0f, height = 1.0f;
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
@@ -84,6 +85,7 @@ namespace age {
 		void set_alpha_channel(float alpha) { alpha_channel = alpha;  }
 		float get_alpha_channel() { return alpha_channel; }
 		void set_independ_rotation(float angle, rotate_vector vec) { independ_rotate_mat = glm::rotate(glm::mat4(1), angle, vec); }
+		void set_independ_translation(glm::vec3 pos) { independ_translate_mat = glm::translate(glm::mat4(1), pos); }
 	public:
 		void set_texture(Texture2D* texture);
 		void set_size(float w, float h);

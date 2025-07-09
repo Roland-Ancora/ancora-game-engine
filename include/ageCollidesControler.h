@@ -34,6 +34,7 @@ namespace age {
 	public:
 		collide_obb_answer get_answer(int id) { return dynamic_obbs[id].answr; }
 		void clear_dynamic_obbs() { dynamic_obbs.clear(); }
+		void clear_static_obbs() { static_obbs.clear(); }
 	public:
 		int add_obb(OBB* obb, obb_controler_element_type type_el, obb_type type_obb);
 		collide_obb_answer test_obb_with_statics(OBB* obb);

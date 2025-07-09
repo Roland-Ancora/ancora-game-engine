@@ -16,7 +16,7 @@
 
 #pragma once
 #include <windows.h>
-#include <audiere.h>
+#include <audiere/audiere.h>
 #include "ageCONSTANTS.h"
 
 

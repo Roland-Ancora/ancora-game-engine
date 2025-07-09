@@ -634,6 +634,41 @@ void UIOrganizedContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 
 
 
+void UISlider::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+{
+	if (is_active) {
+		UIImage::show_and_update(p_mat, p_ui_mat);
+		//s_btn.show_and_update(p_mat * model_mat, p_ui_mat * model_mat);
+
+		if (s_btn.is_focused() && glfwGetMouseButton(*Window::get_active_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+			btn_hold = true;
+			cursor_last_pos_x = Window::get_active_window()->get_cursor_position().x;
+		}
+		if (btn_hold) {
+			if (glfwGetMouseButton(*Window::get_active_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+				btn_hold = false;
+			if (Window::get_active_window()->get_cursor_position().x > cursor_last_pos_x) {
+				float x_d = (Window::get_active_window()->get_cursor_position().x - cursor_last_pos_x) / 100;
+				if (s_btn.get_position_x() + x_d + s_btn.get_width() <= border_x2)
+					s_btn.set_position_x(s_btn.get_position_x() + x_d);
+				else
+					s_btn.set_position_x(border_x2 - s_btn.get_width());
+			}
+			if (Window::get_active_window()->get_cursor_position().x < cursor_last_pos_x) {
+				float x_d = (cursor_last_pos_x - Window::get_active_window()->get_cursor_position().x) / 100;
+				if (s_btn.get_position_x() - x_d >= border_x1)
+					s_btn.set_position_x(s_btn.get_position_x() - x_d);
+				else
+					s_btn.set_position_x(border_x1);
+			}
+		}
+	}
+}
+
+
+
+
+
 void UIContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 {
 	if (is_active) {

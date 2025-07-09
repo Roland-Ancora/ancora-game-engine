@@ -33,6 +33,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <vector>
 #include "ageModel3dData.h"
 #include "ageCamera.h"
@@ -47,6 +50,7 @@ namespace age {
 	class Model3D {
 	protected:
 		Model3dData* model_data = 0;
+		glm::mat4 ALTR_fin_model_mat = glm::mat4(0);
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
@@ -59,22 +63,26 @@ namespace age {
 		void opengl_draw();
 	public:
 		Model3D() { glGenBuffers(4, vboIDs); glGenVertexArrays(1, &vaoID); }
+		Model3D(Model3dData* data) { Model3D(); set_model_3d_data(data); }
 		virtual void show();
 	public:
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
-		glm::mat4 get_model_matrix() { return translate_mat * rotate_mat * scale_mat; }
+		glm::mat4 get_model_matrix() { return ALTR_fin_model_mat == glm::mat4(0) ? translate_mat * rotate_mat * scale_mat : ALTR_fin_model_mat; }
 		glm::vec3 get_color() { return color; }
 		Model3dData* get_model_data() { return model_data; }
 		void set_color(float r, float g, float b) { color = glm::vec3(r, g, b); }
 		float get_color_intensity() { return color_intensity; }
 		void set_color_intensity(float intens) { color_intensity = intens; }
+		glm::mat4 get_rotation_matrix() { return rotate_mat; }
 	public:
 		void set_model_3d_data(Model3dData* model_3d_data);
 		void set_position(float x, float y, float z);
 		void move(float x, float y, float z);
-		void set_rotation(float angle , rotate_vector vec);
+		void set_rotation(float angle, rotate_vector vec);
 		void set_rotation(glm::mat4 matrix);
+		void set_only_rotation_mat(glm::mat4 matrix) { rotate_mat = matrix; }
+		void set_alternative_finnaly_matrix(glm::mat4 matrix) { ALTR_fin_model_mat = matrix; }
 		void rotate(float angle, rotate_vector vec);
 		void set_scale(float x, float y, float z);
 		glm::mat4 get_reverse_matrix();
@@ -161,15 +169,25 @@ namespace age {
 
 	class Model3dGroup {
 		Model3dGroupNode* childs;
+		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::mat4 model_matrix = glm::mat4(1);
 		int childs_count = 0;
 	public:
 		~Model3dGroup();
+		Model3dGroup() {}
+		Model3dGroup(Model3dGroupData* data) { set_group_from_data(data); }
 	public:
 		int get_childs_count() { return childs_count; }
 		Model3dGroupNode* get_child(int id) { return &childs[id]; }
+		glm::vec3 get_position() { return position; }
+		glm::mat4 get_model_matrix() { return model_matrix; }
 	public:
 		void set_group_from_data(Model3dGroupData* data);
+		void set_position(glm::vec3 pos);
+		void set_scale(glm::vec3 scl);
 		void show();
+		void clear();
 	};
 
 }

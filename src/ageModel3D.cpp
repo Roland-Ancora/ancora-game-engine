@@ -49,7 +49,11 @@ void Model3D::opengl_draw()
 
 void Model3D::show()
 {
-	glm::mat4 finaly_mat = translate_mat * rotate_mat * scale_mat;
+	glm::mat4 finaly_mat;
+	if (ALTR_fin_model_mat == glm::mat4(0))
+		finaly_mat = translate_mat * rotate_mat * scale_mat;
+	else
+		finaly_mat = ALTR_fin_model_mat;
 	Camera::get_active_camera()->set_model_matrix(&finaly_mat);
 	opengl_draw();
 }
@@ -102,14 +106,15 @@ void Model3D::set_rotation(glm::mat4 matrix)
 
 void Model3D::rotate(float angle, rotate_vector vec)
 {
-	rotate_mat = glm::rotate(rotate_mat, angle, vec);
-
 	if (vec == AGE_ROTATE_AROUND_X)
 		x_rot += angle;
 	else if (vec == AGE_ROTATE_AROUND_Y)
 		y_rot += angle;
 	else
 		z_rot += angle;
+
+	glm::quat q = glm::yawPitchRoll(x_rot, y_rot, z_rot);
+	rotate_mat = glm::toMat4(q);
 }
 
 void Model3D::set_scale(float x, float y, float z)
@@ -126,7 +131,7 @@ glm::mat4 Model3D::get_reverse_matrix()
 	mat = glm::rotate(mat, -y_rot, AGE_ROTATE_AROUND_Y);
 	mat = glm::rotate(mat, -z_rot, AGE_ROTATE_AROUND_Z);
 	mat = glm::translate(mat, glm::vec3(-x_pos, -y_pos, -z_pos));
-	return mat;
+	return ALTR_fin_model_mat == glm::mat4(0) ? mat : glm::inverse(ALTR_fin_model_mat);
 }
 
 
@@ -268,11 +273,17 @@ void Model3dGroupNode::show()
 void Model3dGroupNode::set_from_data_node(Model3dGroupDataNode* node)
 {
 	model.set_model_3d_data(&node->model);
-	model.set_position(node->position.x, node->position.y, node->position.z);
-	model.rotate(-node->rotation.x, AGE_ROTATE_AROUND_X);
-	model.rotate(-node->rotation.y, AGE_ROTATE_AROUND_Y);
-	model.rotate(-node->rotation.z, AGE_ROTATE_AROUND_Z);
-	model.set_scale(node->scale.x, node->scale.y, node->scale.z);
+	if (node->ALTR_fin_model_mat == glm::mat4(0)) {
+		model.set_position(node->position.x, node->position.y, node->position.z);
+		model.rotate(node->rotation.y, AGE_ROTATE_AROUND_Y);
+		model.rotate(node->rotation.x, AGE_ROTATE_AROUND_X);
+		model.rotate(node->rotation.z, AGE_ROTATE_AROUND_Z);
+		model.rotate(node->rotation.x, AGE_ROTATE_AROUND_X);// ÏÐÎÁËÅÌÀ Â ÌÅÒÎÄÅ ÐÎÒÀÒÅ, ÏÐÈ ÏÅÐÅÑÒÀÍÎÂÊÅ ÐÎÒÀÒÅ ÂÑÅ ËÎÌÀÅÒÑß0
+		model.set_only_rotation_mat(glm::toMat4(node->rotation_quat));
+		model.set_scale(node->scale.x, node->scale.y, node->scale.z);
+	}
+	else
+		model.set_alternative_finnaly_matrix(node->ALTR_fin_model_mat);
 
 	childs_count = node->childs_count;
 	childs = new Model3dGroupNode[childs_count];
@@ -289,10 +300,18 @@ Model3dGroup::~Model3dGroup()
 	delete[] childs;
 }
 
-void Model3dGroup::show()
+void Model3dGroup::set_position(glm::vec3 pos)
 {
-	for (int i = 0; i < childs_count; i++)
-		childs[i].show();
+	model_matrix = glm::translate(glm::mat4(1), pos);
+	for (uint16_t i = 0; i < childs_count; i++)
+		childs[i].get_model()->set_position(pos.x, pos.y, pos.z);
+}
+
+void Model3dGroup::set_scale(glm::vec3 scl)
+{
+	scale = scl;
+	for (uint16_t i = 0; i < childs_count; i++)
+		childs[i].model.set_scale(scale.x, scale.y, scale.z);
 }
 
 void Model3dGroup::set_group_from_data(Model3dGroupData* data)
@@ -301,4 +320,16 @@ void Model3dGroup::set_group_from_data(Model3dGroupData* data)
 	childs_count = data->childs_count;
 	for (int i = 0; i < childs_count; i++)
 		childs[i].set_from_data_node(&data->childs[i]);
+}
+
+void Model3dGroup::show()
+{
+	for (int i = 0; i < childs_count; i++)
+		childs[i].show();
+}
+
+void Model3dGroup::clear()
+{
+	childs_count = 0;
+	delete[] childs;
 }

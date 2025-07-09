@@ -94,7 +94,7 @@ int Importer3D::load_model(std::string dir_name, std::string file_name, Model3dD
 	return 1;
 }
 
-void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node)
+void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node, AGE_IMPORT_MODELS_GROUP_TYPE type)
 {
 	if (node->mNumMeshes > 0) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
@@ -107,19 +107,23 @@ void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::
 			model_data_node.model.diffuse_texture.load_from_file(texture_file.c_str());
 	}
 
-	aiVector3D pos, rot, scale;
-	node->mTransformation.Decompose(scale, rot, pos);
-	model_data_node.position = glm::vec3(pos.x, pos.y, pos.z);
-	model_data_node.rotation = glm::vec3(rot.x, -rot.y, rot.z);
-	model_data_node.scale = glm::vec3(scale.x, scale.y, scale.z);
+	if (type == AGE_IMGT_N_DCMPS_MATRIX)
+		model_data_node.ALTR_fin_model_mat = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
+	else {
+		aiVector3D pos, rot, scale;
+		node->mTransformation.Decompose(scale, rot, pos);
+		model_data_node.position = glm::vec3(pos.x, pos.y, pos.z);
+		model_data_node.rotation = glm::vec3(rot.x, -rot.y, rot.z);
+		model_data_node.scale = glm::vec3(scale.x, scale.y, scale.z);
+	}
 
 	model_data_node.childs_count = node->mNumChildren;
 	model_data_node.childs = new Model3dGroupDataNode[model_data_node.childs_count];
 	for (int i = 0; i < model_data_node.childs_count; i++)
-		load_model_group_node(node->mChildren[i], scene, dir_name, file_name, model_data_node.childs[i]);
+		load_model_group_node(node->mChildren[i], scene, dir_name, file_name, model_data_node.childs[i], type);
 }
 
-int Importer3D::load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data)
+int Importer3D::load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data, AGE_IMPORT_MODELS_GROUP_TYPE type)
 {
 	const aiScene* scene = importer.ReadFile(dir_name + file_name, aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -128,10 +132,12 @@ int Importer3D::load_model_group(std::string dir_name, std::string file_name, Mo
 	}
 
 	aiNode* root_node = scene->mRootNode;
+	if (model_group_data.childs_count != 0)
+		model_group_data.clear();
 	model_group_data.childs_count = root_node->mNumChildren;
 	model_group_data.childs = new Model3dGroupDataNode[model_group_data.childs_count];
 	for (int i = 0; i < model_group_data.childs_count; i++)
-		load_model_group_node(root_node->mChildren[i], scene, dir_name, file_name, model_group_data.childs[i]);
+		load_model_group_node(root_node->mChildren[i], scene, dir_name, file_name, model_group_data.childs[i], type);
 	importer.FreeScene();
 	return 1;
 }

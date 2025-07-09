@@ -75,10 +75,12 @@ namespace age {
 		glm::vec3 get_position() { return position; }
 		ShaderProgram* get_active_shader() { return now_active_shader; }
 		void set_clear_color(float r, float g, float b) { glClearColor(r, g, b, 1.0f); }
+		void set_main_shader(ShaderProgram shader_prog) { main_shader_prog = shader_prog; use_main_shader(); }
 	public:
 		void set_model_matrix(glm::mat4* model_mat);
 		void use_shader(ShaderProgram* shader_prog);
 		void use_main_shader();
+		void set_shader_subroutine(int shader_type, const char* name);
 	};
 
 

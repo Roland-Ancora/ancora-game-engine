@@ -20,6 +20,7 @@
 
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "ageTexture2D.h"
 
 
@@ -35,15 +36,21 @@ namespace age {
 		float* normals;
 		unsigned int* indices;
 		unsigned int vertices_cnt = 0, texture_coords_cnt = 0, normals_cnt = 0, indices_cnt = 0;
+
+		void clear();
 	};
 
 	struct Model3dGroupDataNode {
 		~Model3dGroupDataNode();
 
 		glm::vec3 position, rotation, scale;
+		glm::quat rotation_quat;
+		glm::mat4 ALTR_fin_model_mat = glm::mat4(0);
 		Model3dData model;
 		Model3dGroupDataNode* childs;
 		int childs_count = 0;
+
+		void clear();
 	};
 
 	struct Model3dGroupData {
@@ -51,6 +58,8 @@ namespace age {
 
 		Model3dGroupDataNode* childs;
 		int childs_count = 0;
+
+		void clear();
 	};
 
 }

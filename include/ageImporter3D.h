@@ -26,6 +26,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -36,6 +37,8 @@
 
 
 namespace age {
+
+	enum AGE_IMPORT_MODELS_GROUP_TYPE { AGE_IMGT_DCMPS_MATRIX, AGE_IMGT_N_DCMPS_MATRIX };
 
 	class Importer3D {
 		Importer3D();
@@ -48,10 +51,10 @@ namespace age {
 		static void get_texture_coords_data_from_mesh(aiMesh* mesh, Model3dData& model);
 		static void get_normals_data_from_mesh(aiMesh* mesh, Model3dData& model);
 		static void get_indices_data_from_mesh(aiMesh* mesh, Model3dData& model);
-		static void load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node);
+		static void load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node, AGE_IMPORT_MODELS_GROUP_TYPE type);
 	public:
 		static int load_model(std::string dir_name, std::string file_name, Model3dData& model_data);
-		static int load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data);
+		static int load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data, AGE_IMPORT_MODELS_GROUP_TYPE type = AGE_IMGT_N_DCMPS_MATRIX);
 		static int load_animation(std::string dir_name, std::string file_name, Animation3D& animation_data);
 	};
 

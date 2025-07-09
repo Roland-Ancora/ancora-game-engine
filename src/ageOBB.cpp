@@ -33,14 +33,14 @@ bool OBB::is_collide(glm::vec3 point)
 
 void OBB::set_points(glm::vec3 s_point, glm::vec3 sides)
 {
-	points[OBB_SIDE_ULF] = glm::vec3(s_point.x, s_point.y + sides.y, s_point.z);
-	points[OBB_SIDE_URF] = glm::vec3(s_point.x + sides.x, s_point.y + sides.y, s_point.z);
-	points[OBB_SIDE_DRF] = glm::vec3(s_point.x + sides.x, s_point.y, s_point.z);
-	points[OBB_SIDE_DLF] = glm::vec3(s_point.x, s_point.y, s_point.z);
-	points[OBB_SIDE_ULB] = glm::vec3(s_point.x, s_point.y + sides.y, s_point.z - sides.z);
-	points[OBB_SIDE_URB] = glm::vec3(s_point.x + sides.x, s_point.y + sides.y, s_point.z - sides.z);
-	points[OBB_SIDE_DRB] = glm::vec3(s_point.x + sides.x, s_point.y, s_point.z - sides.z);
-	points[OBB_SIDE_DLB] = glm::vec3(s_point.x, s_point.y, s_point.z - sides.z);
+	points[OBB_SIDE_ULF] = glm::vec3(s_point.x, s_point.y + sides.y, s_point.z + sides.z);
+	points[OBB_SIDE_URF] = glm::vec3(s_point.x + sides.x, s_point.y + sides.y, s_point.z + sides.z);
+	points[OBB_SIDE_DRF] = glm::vec3(s_point.x + sides.x, s_point.y, s_point.z + sides.z);
+	points[OBB_SIDE_DLF] = glm::vec3(s_point.x, s_point.y, s_point.z + sides.z);
+	points[OBB_SIDE_ULB] = glm::vec3(s_point.x, s_point.y + sides.y, s_point.z);
+	points[OBB_SIDE_URB] = glm::vec3(s_point.x + sides.x, s_point.y + sides.y, s_point.z);
+	points[OBB_SIDE_DRB] = glm::vec3(s_point.x + sides.x, s_point.y, s_point.z);
+	points[OBB_SIDE_DLB] = glm::vec3(s_point.x, s_point.y, s_point.z);
 }
 
 void OBB::set_from_model_data(OBB& obb, Model3dData* model_data)

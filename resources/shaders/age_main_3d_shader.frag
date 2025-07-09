@@ -36,8 +36,7 @@ subroutine uniform color_processing color_processing_type;
 subroutine (color_processing)
 vec4 default_color_only()
 {
-    vec4 color_default = vec4(texture(main_texture_id, TexturePos.xy) * (1.0f - color_intensity) + vec4(color, 1.0f) * color_intensity);
-    return color_default * vec4(light_intensity.xyz, 1.0f);
+    return vec4(texture(main_texture_id, TexturePos.xy) * (1.0f - color_intensity) + vec4(color, 1.0f) * color_intensity);
 }
 
 subroutine (color_processing)
