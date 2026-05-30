@@ -52,6 +52,8 @@ void Window::set_fullscreen()
 void Window::add_camera(Camera *camera)
 {
 	camera->set_aspects_ratio(static_cast<float>(width), static_cast<float>(height));
+	camera->_set_window_resolution(width, height);
+	camera->_create_main_default_renderbuffer();
 }
 
 glm::vec2 Window::get_cursor_position()

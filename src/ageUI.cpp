@@ -108,7 +108,7 @@ void UIObject::set_z_val(float z)
 
 void UIObject::_add_child_object(UIObject* obj)
 {
-	if (std::count(childs.begin(), childs.end(), obj) > 0)
+	if (std::count(childs.begin(), childs.end(), obj) > 0) 
 		return;
 	childs.push_back(obj);
 	obj->get_z_val() >= z_var ? childs_back.push_back(obj) : childs_front.push_back(obj);
@@ -173,7 +173,14 @@ UIWindow* UIWindow::active_ui_window = 0;
 
 UIWindow::UIWindow(std::uint16_t resolution_w, std::uint16_t resolution_h)
 {
-	active_ui_window = this;
+	if (active_ui_window == 0) {
+		active_ui_window = this;
+		proj_mat = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else {
+		aspects_ratio = float(resolution_h) / resolution_w;
+		proj_mat = glm::ortho(0.0f, 1.0f, 1.0f * aspects_ratio, 0.0f, 0.0f, 1.0f);
+	}
 	main_shader_prog_ui = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_VERTEX_SHADER, AGE_DEFAULT_UI_FRAGMENT_SHADER);
 	main_shader_fin_prog_ui = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_FINNALY_TEXTURE_VERTEX_SHADER, AGE_DEFAULT_UI_FINNALY_TEXTURE_FRAGMENT_SHADER);
 	alpha_uniform_loc = glGetUniformLocation(main_shader_prog_ui.get_shader_program_id(), "alpha");
@@ -181,7 +188,6 @@ UIWindow::UIWindow(std::uint16_t resolution_w, std::uint16_t resolution_h)
 	aspects_ratio = float(resolution_h) / resolution_w;
 	ver_pos_data[5] = 1.0f - 2 / aspects_ratio;
 	ver_pos_data[7] = 1.0f - 2 / aspects_ratio;
-	proj_mat = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
 	view_mat = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	VP_mat = proj_mat * view_mat;
 
@@ -228,12 +234,14 @@ void UIWindow::show()
 
 	UIObject::_clear_focused_object();
 	for (std::uint16_t i = 0; i < childs.size(); i++)
-		childs[i]->show_and_update(VP_mat, glm::mat4(1));
+		childs[i]->show_and_update(VP_mat, glm::mat4(1), this);
 
 	Camera::get_active_camera()->use_main_shader();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	Camera::get_active_camera()->use_shader(&main_shader_fin_prog_ui);
+
+	glUniform1f(main_shader_fin_prog_ui.get_uniform_location("TMP_vis_black"), TMP_visibility_to_black);
 
 	glBindVertexArray(vaoID);
 	glEnableVertexAttribArray(0);
@@ -263,6 +271,22 @@ void UIWindow::show()
 	Camera::get_active_camera()->use_main_shader();
 }
 
+void UIWindow::show_only_in_buffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glClearColor(clear_color.x, clear_color.y, clear_color.z, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // буфер трафарета не используется
+	glEnable(GL_DEPTH_TEST);
+	Camera::get_active_camera()->use_shader(&main_shader_prog_ui);
+
+	for (std::uint16_t i = 0; i < childs.size(); i++) {
+		childs[i]->show_only(VP_mat, glm::mat4(1), this);
+	}
+
+	Camera::get_active_camera()->use_main_shader();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 
 
 
@@ -278,7 +302,7 @@ UIImage::UIImage()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void UIImage::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UIImage::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	if (is_active) {
 		glm::mat4 fin_model_mat = p_mat * model_mat;
@@ -287,11 +311,11 @@ void UIImage::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		is_focused_calculate(p_ui_mat);
 
 		for (std::uint16_t i = 0; i < childs_back.size(); i++)
-			childs_back[i]->show_and_update(fin_model_mat, fin_ui_mat);
+			childs_back[i]->show_and_update(fin_model_mat, fin_ui_mat, win_r);
 
 		Camera::get_active_camera()->set_model_matrix(&fin_model_mat);
 
-		glUniform1f(UIWindow::get_active_ui_window()->_get_alpha_uniform_location(), alpha);
+		glUniform1f(win_r->_get_alpha_uniform_location(), alpha);
 
 		glBindVertexArray(vaoID);
 		glEnableVertexAttribArray(0);
@@ -317,15 +341,59 @@ void UIImage::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		glDisableVertexAttribArray(1);
 
 		for (std::uint16_t i = 0; i < childs_front.size(); i++)
-			childs_front[i]->show_and_update(fin_model_mat, fin_ui_mat);
+			childs_front[i]->show_and_update(fin_model_mat, fin_ui_mat, win_r);
 	}
 }
 
-void UIImage::set_texture(Texture2D* tex)
+void UIImage::show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
+{
+	if (is_active) {
+		glm::mat4 fin_model_mat = p_mat * model_mat;
+		glm::mat4 fin_ui_mat = p_ui_mat * model_mat;
+
+		for (std::uint16_t i = 0; i < childs_back.size(); i++)
+			childs_back[i]->show_and_update(fin_model_mat, fin_ui_mat, win_r);
+
+		Camera::get_active_camera()->set_model_matrix(&fin_model_mat);
+
+		glUniform1f(win_r->_get_alpha_uniform_location(), alpha);
+
+		glBindVertexArray(vaoID);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		glBindTexture(GL_TEXTURE_2D, *texture);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glBindVertexArray(vaoID);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glDisable(GL_BLEND);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+
+		for (std::uint16_t i = 0; i < childs_front.size(); i++)
+			childs_front[i]->show_only(fin_model_mat, fin_ui_mat, win_r);
+	}
+}
+
+void UIImage::set_texture(Texture2D* tex, UIWindow* win_r)
 {
 	texture = tex;
 	aspects_ratio = float(tex->get_height()) / tex->get_width();
-	height = width * aspects_ratio / UIWindow::get_active_ui_window()->get_aspects_ratio();
+	if (win_r == 0)
+		height = width * aspects_ratio / UIWindow::get_active_ui_window()->get_aspects_ratio();
+	else
+		height = width * aspects_ratio / win_r->get_aspects_ratio();
 	ver_pos_data[7] = 1.0f * aspects_ratio;
 	ver_pos_data[10] = 1.0f * aspects_ratio;
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
@@ -352,8 +420,8 @@ void UIImage::set_part_from_x_begin(float pc)
 	shown_part_from_x_l = pc;
 	ver_pos_data[5] = shown_part_from_x_l;
 	ver_pos_data[8] = shown_part_from_x_l;
-	tex_pos_data[2] = 1.0f - shown_part_from_x_l;
-	tex_pos_data[4] = 1.0f - shown_part_from_x_l;
+	tex_pos_data[2] = shown_part_from_x_l;
+	tex_pos_data[4] = shown_part_from_x_l;
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
 	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), ver_pos_data, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
@@ -412,10 +480,10 @@ inline void UIButton::set_textures(Texture2D* tex[4])
 	disable_texture = tex[3];
 }
 
-void UIButton::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UIButton::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	if (is_active) {
-		UIImage::show_and_update(p_mat, p_ui_mat);
+		UIImage::show_and_update(p_mat, p_ui_mat, win_r);
 
 		if (is_btn_active) {
 			if (focused) {
@@ -439,7 +507,7 @@ void UIButton::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 
 
 
-void UIText::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UIText::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	if (is_active) {
 		Camera::get_active_camera()->use_shader(Font::get_shader_program());
@@ -447,6 +515,8 @@ void UIText::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		glUniform1f(shader_z_var_loc, z_var);
 		GLuint shader_alpha_var_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "alpha");
 		glUniform1f(shader_alpha_var_loc, alpha);
+		GLuint shader_color_var_loc = glGetUniformLocation(Camera::get_active_camera()->get_active_shader()->get_shader_program_id(), "textColor");
+		glUniform3f(shader_color_var_loc, color.x, color.y, color.z);
 
 		glm::mat4 fin_mat = p_mat * model_mat;
 		Camera::get_active_camera()->set_model_matrix(&fin_mat);
@@ -498,6 +568,8 @@ void UIText::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		UIWindow::get_active_ui_window()->use_main_ui_shader();
 	}
 }
+
+void UIText::show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r) { show_and_update(p_mat, p_ui_mat, win_r); }
 
 void UIText::calculate_str_end_symbol_nums()
 {
@@ -606,7 +678,7 @@ void UIOrganizedContainer::update_childs()
 	}
 }
 
-void UIOrganizedContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UIOrganizedContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	if (is_active) {
 		if (InputEventsControler::get_scroll_y() < 0.0f && now_list_pos + height < max_height) {
@@ -626,7 +698,7 @@ void UIOrganizedContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		glm::mat4 fin_matrix = list_translate_mat * p_mat * model_mat;
 		glm::mat4 fin_ui_matrix = list_translate_mat * p_ui_mat * model_mat;
 		for (int i = 0; i < childs.size(); i++)
-			childs[i]->show_and_update(fin_matrix, fin_ui_matrix);
+			childs[i]->show_and_update(fin_matrix, fin_ui_matrix, win_r);
 	}
 }
 
@@ -634,11 +706,10 @@ void UIOrganizedContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 
 
 
-void UISlider::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UISlider::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	if (is_active) {
-		UIImage::show_and_update(p_mat, p_ui_mat);
-		//s_btn.show_and_update(p_mat * model_mat, p_ui_mat * model_mat);
+		UIImage::show_and_update(p_mat, p_ui_mat, win_r);
 
 		if (s_btn.is_focused() && glfwGetMouseButton(*Window::get_active_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			btn_hold = true;
@@ -648,19 +719,20 @@ void UISlider::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 			if (glfwGetMouseButton(*Window::get_active_window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 				btn_hold = false;
 			if (Window::get_active_window()->get_cursor_position().x > cursor_last_pos_x) {
-				float x_d = (Window::get_active_window()->get_cursor_position().x - cursor_last_pos_x) / 100;
+				float x_d = (Window::get_active_window()->get_cursor_position().x - cursor_last_pos_x) / 1000;
 				if (s_btn.get_position_x() + x_d + s_btn.get_width() <= border_x2)
 					s_btn.set_position_x(s_btn.get_position_x() + x_d);
 				else
 					s_btn.set_position_x(border_x2 - s_btn.get_width());
 			}
 			if (Window::get_active_window()->get_cursor_position().x < cursor_last_pos_x) {
-				float x_d = (cursor_last_pos_x - Window::get_active_window()->get_cursor_position().x) / 100;
+				float x_d = (cursor_last_pos_x - Window::get_active_window()->get_cursor_position().x) / 1000;
 				if (s_btn.get_position_x() - x_d >= border_x1)
 					s_btn.set_position_x(s_btn.get_position_x() - x_d);
 				else
 					s_btn.set_position_x(border_x1);
 			}
+			cursor_last_pos_x = Window::get_active_window()->get_cursor_position().x;
 		}
 	}
 }
@@ -669,11 +741,11 @@ void UISlider::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 
 
 
-void UIContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UIContainer::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	if (is_active) {
 		for (int i = 0; i < childs.size(); i++)
-			childs[i]->show_and_update(p_mat * model_mat, p_ui_mat * model_mat);
+			childs[i]->show_and_update(p_mat * model_mat, p_ui_mat * model_mat, win_r);
 	}
 }
 
@@ -723,7 +795,7 @@ UIVideo::UIVideo()
 	
 }
 
-void UIVideo::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
+void UIVideo::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r)
 {
 	double now_time = ProgramClock::get_eleapsed_frame_time();
 	ms_passed_after_last_frame += now_time;
@@ -788,7 +860,7 @@ void UIVideo::show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat)
 		glDisableVertexAttribArray(1);
 
 		for (std::uint16_t i = 0; i < childs.size(); i++)
-			childs[i]->show_and_update(fin_model_mat, fin_ui_mat);
+			childs[i]->show_and_update(fin_model_mat, fin_ui_mat, win_r);
 	}
 }
 

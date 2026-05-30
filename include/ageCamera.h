@@ -46,12 +46,31 @@ namespace age {
 	typedef char camera_type;
 	const camera_type AGE_CAMERA_PERSPECTIVE = 0;
 	const camera_type AGE_CAMERA_ORTHOGRAPHIC = 1;
+	typedef bool camera_hdr;
+	const camera_hdr AGE_CAMERA_HDR_ON = true;
+	const camera_hdr AGE_CAMERA_HDR_OFF = false;
+
+
+
+	class _Framebuffer {
+		GLuint fbo_id;
+		GLuint fbo_texture_id;
+		GLuint rbo_dt;
+		uint16_t tex_w, tex_h;
+	public:
+		_Framebuffer() {}
+		_Framebuffer(uint16_t resolution_w, uint16_t resolution_h);
+		GLuint get_fbo_id() { return fbo_id; }
+		GLuint get_texture_id() { return fbo_texture_id; }
+		uint16_t get_width() { return tex_w; }
+		uint16_t get_height() { return tex_h; }
+	};
 
 
 
 	class Camera {
 	protected:
-		Camera();
+		Camera(camera_hdr use_hdr = AGE_CAMERA_HDR_OFF);
 	protected:
 		static Camera* active_camera;
 		static glm::mat4 ident_mat;
@@ -62,9 +81,38 @@ namespace age {
 		glm::mat4* model_matrix = &ident_mat;
 		float aspects_ratio = 1.0f; // it's width to height ratio
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-		GLuint FBO, FBO_texture, RBO_depth_trapharet;
-	protected:
-		void create_frame_buffer(unsigned int resolution_w, unsigned int resolution_h);
+
+		GLuint finaly_framebuffer_texture, finaly_framebuffer;
+		ShaderProgram shader_for_finaly_framebuffer_rendering;
+		GLuint finaly_rbo;
+		GLuint main_framebuffer = 0;
+		camera_hdr is_hdr = AGE_CAMERA_HDR_OFF;
+
+		uint16_t defoult_window_resolution_w, defoult_window_resolution_h;
+		ShaderProgram shader_for_framebuffer_texture_draw;
+		uint8_t usr_bufers_cnt = 0;
+		_Framebuffer* usr_framebuffers;
+		GLuint vboIDs[2];
+		GLuint vbo_buf;
+		GLuint vaoID;
+		float ver_pos_data[8] = {
+			-1.0f, 1.0f,
+			1.0f, 1.0f,
+			1.0f, 1.0f - 2 * aspects_ratio,
+			-1.0f, 1.0f - 2 * aspects_ratio,
+		};
+		float ver_pos_data_fbufs[8] = {
+			-1.0f, 1.0f,
+			1.0f, 1.0f,
+			1.0f, -1.0f,
+			-1.0f, -1.0f
+		};
+		float tex_pos_data[8] = {
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+			1.0f, 0.0f,
+			0.0f, 0.0f
+		};
 	public:
 		static Camera* get_active_camera() { return active_camera; }
 		virtual void clear_buffers() {};
@@ -76,11 +124,19 @@ namespace age {
 		ShaderProgram* get_active_shader() { return now_active_shader; }
 		void set_clear_color(float r, float g, float b) { glClearColor(r, g, b, 1.0f); }
 		void set_main_shader(ShaderProgram shader_prog) { main_shader_prog = shader_prog; use_main_shader(); }
+		void use_main_framebufer() { glBindFramebuffer(GL_FRAMEBUFFER, main_framebuffer); glViewport(0, 0, defoult_window_resolution_w, defoult_window_resolution_h); }
 	public:
 		void set_model_matrix(glm::mat4* model_mat);
 		void use_shader(ShaderProgram* shader_prog);
 		void use_main_shader();
 		void set_shader_subroutine(int shader_type, const char* name);
+		uint8_t add_framebuffer(uint16_t resolution_w, uint16_t resolution_h);
+		void use_framebuffer(uint8_t id);
+		void show_framebuffers();
+		void show_finaly_framebuffer();
+	public:
+		void _set_window_resolution(uint16_t w, uint16_t h) { defoult_window_resolution_w = w; defoult_window_resolution_h = h; }
+		void _create_main_default_renderbuffer(); // used in Window after _set_window_resolution
 	};
 
 
@@ -93,7 +149,7 @@ namespace age {
 	private:
 		void calculate_and_use_MVP_matrices();
 	public:
-		Camera2D();
+		Camera2D(camera_hdr use_hdr = AGE_CAMERA_HDR_OFF);
 		static Camera2D* get_active_2d_camera() { return active_2d_camera; }
 		virtual void clear_buffers();
 		virtual void set_aspects_ratio(float x, float y);
@@ -122,7 +178,7 @@ namespace age {
 		void calculate_and_use_MVP_matrices();
 		void calculate_rotation_from_radians();
 	public:
-		Camera3D();
+		Camera3D(camera_hdr use_hdr = AGE_CAMERA_HDR_OFF);
 		static Camera3D* get_active_3d_camera() { return active_3d_camera; }
 		virtual void clear_buffers();
 		virtual void set_aspects_ratio(float x, float y);

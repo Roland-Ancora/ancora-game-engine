@@ -43,9 +43,9 @@ namespace age {
 	struct Model3dGroupDataNode {
 		~Model3dGroupDataNode();
 
-		glm::vec3 position, rotation, scale;
+		glm::vec3 position, scale;
+		glm::quat rot;
 		glm::quat rotation_quat;
-		glm::mat4 ALTR_fin_model_mat = glm::mat4(0);
 		Model3dData model;
 		Model3dGroupDataNode* childs;
 		int childs_count = 0;

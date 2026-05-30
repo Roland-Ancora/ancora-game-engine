@@ -27,6 +27,7 @@ namespace age {
 	public:
 		static double get_all_program_time() { return ProgramClock::all_program_time; }
 		static double get_eleapsed_frame_time() { return ProgramClock::eleapsed_time_since_last_frame; }
+		static void clear_eleapsed_frame_time() { ProgramClock::eleapsed_time_since_last_frame = 0.0f; ProgramClock::point_time_val = clock(); }
 	public:
 		static void init();
 		static void update();

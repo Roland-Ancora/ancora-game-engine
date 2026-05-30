@@ -31,12 +31,17 @@ void Model3D::opengl_draw()
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIDs[3]);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glDrawElements(
 		GL_TRIANGLES,
 		model_data->indices_cnt,
 		GL_UNSIGNED_INT,
 		(void*)0
 	);
+
+	glDisable(GL_BLEND);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -50,10 +55,9 @@ void Model3D::opengl_draw()
 void Model3D::show()
 {
 	glm::mat4 finaly_mat;
-	if (ALTR_fin_model_mat == glm::mat4(0))
-		finaly_mat = translate_mat * rotate_mat * scale_mat;
-	else
-		finaly_mat = ALTR_fin_model_mat;
+
+	finaly_mat = translate_mat * rotate_mat * scale_mat;
+
 	Camera::get_active_camera()->set_model_matrix(&finaly_mat);
 	opengl_draw();
 }
@@ -83,38 +87,34 @@ void Model3D::move(float x, float y, float z)
 
 void Model3D::set_rotation(float angle, rotate_vector vec)
 {
-	glm::mat4 rotate_by_vector_now = glm::rotate(glm::mat4(1), angle, vec);
-	rotate_mat = rotate_by_vector_now;
-
-	if (vec == AGE_ROTATE_AROUND_X)
-		x_rot = angle;
-	else if (vec == AGE_ROTATE_AROUND_Y)
-		y_rot = angle;
-	else
-		z_rot = angle;
+	rot = glm::angleAxis(angle, vec);
+	rotate_mat = glm::toMat4(rot);
 }
 
 void Model3D::set_rotation(glm::mat4 matrix)
 {
-	rotate_mat = matrix;
-	glm::vec3 _tmp_vec3;
-	glm::vec4 _persp;
-	glm::quat _rotate;
-	glm::decompose(matrix, _tmp_vec3, _rotate, _tmp_vec3, _tmp_vec3, _persp);
-	x_rot = _rotate.x, y_rot = _rotate.y, z_rot = _rotate.z;
+	glm::vec3 scale, translation, skew;
+	glm::vec4 perspective;
+
+	glm::decompose(matrix, scale, rot, translation, skew, perspective);
+	rotate_mat = glm::toMat4(rot);
+}
+
+void Model3D::set_rotation(glm::quat q)
+{
+	rot = q;
+	rotate_mat = glm::toMat4(rot);
 }
 
 void Model3D::rotate(float angle, rotate_vector vec)
 {
-	if (vec == AGE_ROTATE_AROUND_X)
-		x_rot += angle;
-	else if (vec == AGE_ROTATE_AROUND_Y)
-		y_rot += angle;
-	else
-		z_rot += angle;
+	glm::quat delta = glm::angleAxis(
+		angle,
+		glm::vec3(vec)
+	);
 
-	glm::quat q = glm::yawPitchRoll(x_rot, y_rot, z_rot);
-	rotate_mat = glm::toMat4(q);
+	rot = delta * rot;
+	rotate_mat = glm::toMat4(rot);
 }
 
 void Model3D::set_scale(float x, float y, float z)
@@ -125,13 +125,9 @@ void Model3D::set_scale(float x, float y, float z)
 
 glm::mat4 Model3D::get_reverse_matrix()
 {
-	glm::mat4 mat = glm::mat4(1);
-	mat = glm::scale(mat, glm::vec3(1 / x_scale, 1 / y_scale, 1 / z_scale));
-	mat = glm::rotate(mat, -x_rot, AGE_ROTATE_AROUND_X);
-	mat = glm::rotate(mat, -y_rot, AGE_ROTATE_AROUND_Y);
-	mat = glm::rotate(mat, -z_rot, AGE_ROTATE_AROUND_Z);
-	mat = glm::translate(mat, glm::vec3(-x_pos, -y_pos, -z_pos));
-	return ALTR_fin_model_mat == glm::mat4(0) ? mat : glm::inverse(ALTR_fin_model_mat);
+	glm::mat4 finaly_mat = translate_mat * rotate_mat * scale_mat;
+
+	return glm::inverse(finaly_mat);
 }
 
 
@@ -184,7 +180,7 @@ void Model3D_Anim::show()
 	anim_matrix = translate_mat * rotate_mat * scale_mat;
 
 	if (anim_play) {
-		now_play_time += ProgramClock::get_eleapsed_frame_time();
+		now_play_time += ProgramClock::get_eleapsed_frame_time() * anim_speed;
 		if (now_play_time >= anim->anim_duration) {
 			if (is_anim_loop) {
 				now_play_time = now_play_time - anim->anim_duration;
@@ -273,17 +269,10 @@ void Model3dGroupNode::show()
 void Model3dGroupNode::set_from_data_node(Model3dGroupDataNode* node)
 {
 	model.set_model_3d_data(&node->model);
-	if (node->ALTR_fin_model_mat == glm::mat4(0)) {
-		model.set_position(node->position.x, node->position.y, node->position.z);
-		model.rotate(node->rotation.y, AGE_ROTATE_AROUND_Y);
-		model.rotate(node->rotation.x, AGE_ROTATE_AROUND_X);
-		model.rotate(node->rotation.z, AGE_ROTATE_AROUND_Z);
-		model.rotate(node->rotation.x, AGE_ROTATE_AROUND_X);// ÏÐÎÁËÅÌÀ Â ÌÅÒÎÄÅ ÐÎÒÀÒÅ, ÏÐÈ ÏÅÐÅÑÒÀÍÎÂÊÅ ÐÎÒÀÒÅ ÂÑÅ ËÎÌÀÅÒÑß0
-		model.set_only_rotation_mat(glm::toMat4(node->rotation_quat));
-		model.set_scale(node->scale.x, node->scale.y, node->scale.z);
-	}
-	else
-		model.set_alternative_finnaly_matrix(node->ALTR_fin_model_mat);
+
+	model.set_position(node->position.x, node->position.y, node->position.z);
+	model.set_rotation(node->rot);
+	model.set_scale(node->scale.x, node->scale.y, node->scale.z);
 
 	childs_count = node->childs_count;
 	childs = new Model3dGroupNode[childs_count];
@@ -302,6 +291,7 @@ Model3dGroup::~Model3dGroup()
 
 void Model3dGroup::set_position(glm::vec3 pos)
 {
+	position = pos;
 	model_matrix = glm::translate(glm::mat4(1), pos);
 	for (uint16_t i = 0; i < childs_count; i++)
 		childs[i].get_model()->set_position(pos.x, pos.y, pos.z);

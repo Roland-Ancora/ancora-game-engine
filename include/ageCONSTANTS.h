@@ -10,7 +10,7 @@ namespace age {
 	const int AGE_UI_WINDOW_OBJECT_OVERLAPPING_ERROR = 14;
 	const int AGE_COLLIDES_CONTROLER_OBJECT_OVERLAPPING_ERROR = 15;
 
-	const int AGE_SHADER_PROGRAM_MAX_LENGHT = 5000;
+	const int AGE_SHADER_PROGRAM_MAX_LENGHT = 8000;
 	const int AGE_SHADER_OPEN_ERROR = 21;
 
 	const char AGE_DEFAULT_3D_VERTEX_SHADER[] = "./resources/shaders/age_main_3d_shader.vert";
@@ -31,6 +31,8 @@ namespace age {
 	const char AGE_AXISLINES_FRAGMENT_SHADER[] = "resources/shaders/additions/age_axislines_shader.frag";
 	const char AGE_DEFAULT_3D_SKYBOX_VERTEX_SHADER[] = "resources/shaders/age_main_3d_skybox_shader.vert";
 	const char AGE_DEFAULT_3D_SKYBOX_FRAGMENT_SHADER[] = "resources/shaders/age_main_3d_skybox_shader.frag";
+	const char AGE_FINALY_FRAMEBUFFER_TEXTURE_VERTEX_SHADER[] = "resources/shaders/age_main_finaly_frambuffer_shader.vert";
+	const char AGE_FINALY_FRAMEBUFFER_TEXTURE_FRAGMENT_SHADER[] = "resources/shaders/age_main_finaly_frambuffer_shader.frag";
 
 	const char AGE_UI3D_SHADER_UNIFORM_ALPHA_CHANNEL_NAME[] = "alpha_channel";
 

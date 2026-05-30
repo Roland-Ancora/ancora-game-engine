@@ -33,6 +33,8 @@ namespace age {
 	const texture_filter AGE_GL_LINEAR = GL_LINEAR;
 
 	class Texture2D {
+	//protected:
+	public:
 		GLuint texture_id;
 		GLubyte* img = 0;
 		int texture_width, texture_height;
@@ -47,6 +49,11 @@ namespace age {
 		int load_from_file(const char* file_name, texture_filter filter = AGE_GL_NEAREST);
 	public:
 		operator GLuint () const { return texture_id; }
+	};
+
+	class TMP_Texture2D_OGLBased : public Texture2D {
+	public:
+		TMP_Texture2D_OGLBased(GLuint id) { texture_id = id; }
 	};
 
 }

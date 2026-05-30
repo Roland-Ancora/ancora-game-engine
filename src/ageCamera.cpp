@@ -6,38 +6,64 @@ using namespace age;
 
 
 
-glm::mat4 Camera::ident_mat = glm::mat4(1);
-Camera* Camera::active_camera = 0;
-
-void Camera::create_frame_buffer(unsigned int resolution_w, unsigned int resolution_h)
+_Framebuffer::_Framebuffer(uint16_t resolution_w, uint16_t resolution_h)
 {
-	glGenFramebuffers(1, &FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-	glGenTextures(1, &FBO_texture);
-	glBindTexture(GL_TEXTURE_2D, FBO_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, resolution_w, resolution_h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	tex_w = resolution_w;
+	tex_h = resolution_h;
+
+	glGenFramebuffers(1, &fbo_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+
+	glGenTextures(1, &fbo_texture_id);
+	glBindTexture(GL_TEXTURE_2D, fbo_texture_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, resolution_w, resolution_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBO_texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_texture_id, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glGenRenderbuffers(1, &RBO_depth_trapharet);
-	glBindRenderbuffer(GL_RENDERBUFFER, RBO_depth_trapharet);
+	glGenRenderbuffers(1, &rbo_dt);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo_dt);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolution_w, resolution_h);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO_depth_trapharet);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo_dt);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		printf("AGE::ERROR::CAMERA::FRAMEBUFFER:: Framebuffer is not complete!\n");
+		printf("AGE::ERROR::_FRAMEBUFER::FRAMEBUFFER:: Framebuffer is not complete!\n");
+
+	glClearColor(1.8f, 0.0f, 0.8f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-Camera::Camera()
+
+
+
+
+glm::mat4 Camera::ident_mat = glm::mat4(1);
+Camera* Camera::active_camera = 0;
+
+Camera::Camera(camera_hdr use_hdr)
 {
 	if (active_camera != 0)
 		exit(AGE_CAMERA_OBJECT_OVERLAPPING_ERROR);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0);
 	active_camera = this;
+	is_hdr = use_hdr;
+
+	glGenBuffers(2, vboIDs);
+	glGenVertexArrays(1, &vaoID);
+	glGenBuffers(1, &vbo_buf);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), ver_pos_data, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), tex_pos_data, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_buf);
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), ver_pos_data_fbufs, GL_STATIC_DRAW);
+	shader_for_framebuffer_texture_draw = ShaderProgram::create_shader_program(AGE_DEFAULT_UI_FINNALY_TEXTURE_VERTEX_SHADER, AGE_DEFAULT_UI_FINNALY_TEXTURE_FRAGMENT_SHADER);
+
+	shader_for_finaly_framebuffer_rendering = ShaderProgram::create_shader_program(AGE_FINALY_FRAMEBUFFER_TEXTURE_VERTEX_SHADER, AGE_FINALY_FRAMEBUFFER_TEXTURE_FRAGMENT_SHADER);
 }
 
 // Sets a model matrix, with which the next object will be drawn. Note that every object calls this function before rendering
@@ -72,15 +98,142 @@ void Camera::set_shader_subroutine(int shader_type, const char* name)
 	glUniformSubroutinesuiv(shader_type, 1, &s);
 }
 
+uint8_t Camera::add_framebuffer(uint16_t resolution_w, uint16_t resolution_h)
+{
+	_Framebuffer* bufs_recov = new _Framebuffer[usr_bufers_cnt];
+	for (uint8_t i = 0; i < usr_bufers_cnt; i++)
+		bufs_recov[i] = usr_framebuffers[i];
+	usr_bufers_cnt++;
+	delete[] usr_framebuffers;
+	usr_framebuffers = new _Framebuffer[usr_bufers_cnt];
+	for (uint8_t i = 0; i < usr_bufers_cnt - 1; i++)
+		usr_framebuffers[i] = bufs_recov[i];
+	delete[] bufs_recov;
+	usr_framebuffers[usr_bufers_cnt - 1] = _Framebuffer(resolution_w, resolution_h);
+	return usr_bufers_cnt - 1;
+}
+
+void Camera::use_framebuffer(uint8_t id)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, usr_framebuffers[id].get_fbo_id());
+	glViewport(0, 0, usr_framebuffers[id].get_width(), usr_framebuffers[id].get_height());
+	glClearColor(1.0f, 0.0f, 0.8f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+}
+
+void Camera::show_framebuffers()
+{
+	for (int i = 0; i < usr_bufers_cnt; i++) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		Camera::get_active_camera()->use_shader(&shader_for_framebuffer_texture_draw);
+
+		glBindVertexArray(vaoID);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_buf);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		glDisable(GL_DEPTH_TEST);
+		glBindTexture(GL_TEXTURE_2D, usr_framebuffers[i].get_texture_id());
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glBindVertexArray(vaoID);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		glDisable(GL_BLEND);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glEnable(GL_DEPTH_TEST);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+
+		Camera::get_active_camera()->use_main_shader();
+	}
+}
+
+void Camera::_create_main_default_renderbuffer()
+{
+	glGenFramebuffers(1, &finaly_framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, finaly_framebuffer);
+	main_framebuffer = finaly_framebuffer;
+
+	glGenTextures(1, &finaly_framebuffer_texture);
+	glBindTexture(GL_TEXTURE_2D, finaly_framebuffer_texture);
+	if (is_hdr)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, defoult_window_resolution_w, defoult_window_resolution_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, defoult_window_resolution_w, defoult_window_resolution_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, finaly_framebuffer_texture, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenRenderbuffers(1, &finaly_rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, finaly_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, defoult_window_resolution_w, defoult_window_resolution_h);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, finaly_rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		printf("AGE::ERROR::_FRAMEBUFER::FRAMEBUFFER:: Main framebuffer is not complete!\n");
+
+	glClearColor(1.8f, 0.0f, 0.8f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Camera::show_finaly_framebuffer()
+{
+	use_shader(&shader_for_finaly_framebuffer_rendering);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glBindVertexArray(vaoID);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[0]);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[1]);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glDisable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, finaly_framebuffer_texture);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glBindVertexArray(vaoID);
+	glDrawArrays(GL_QUADS, 0, 4);
+
+	glDisable(GL_BLEND);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_DEPTH_TEST);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+
+	use_main_shader();
+}
+
 
 
 
 
 Camera2D* Camera2D::active_2d_camera = 0;
 
-Camera2D::Camera2D()
+Camera2D::Camera2D(camera_hdr use_hdr)
 {
 	active_2d_camera = this;
+	is_hdr = use_hdr;
 	main_shader_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_2D_VERTEX_SHADER, AGE_DEFAULT_2D_FRAGMENT_SHADER);
 	projection_matrix = glm::ortho(0.0f, fov, 0.0f, fov / aspects_ratio, z_near, z_far);
 	glUseProgram(main_shader_prog.get_shader_program_id());
@@ -163,9 +316,10 @@ void Camera2D::set_position_y(float y)
 
 Camera3D* Camera3D::active_3d_camera = 0;
 
-Camera3D::Camera3D()
+Camera3D::Camera3D(camera_hdr use_hdr)
 {
 	active_3d_camera = this;
+	is_hdr = use_hdr;
 	glEnable(GL_DEPTH_TEST);
 	main_shader_prog = ShaderProgram::create_shader_program(AGE_DEFAULT_3D_VERTEX_SHADER, AGE_DEFAULT_3D_FRAGMENT_SHADER);
 	GLuint default_color_processing_subroutine = glGetSubroutineIndex(main_shader_prog.get_shader_program_id(), GL_FRAGMENT_SHADER, "default_color_only");
@@ -193,6 +347,9 @@ void Camera3D::calculate_rotation_from_radians()
 
 void Camera3D::clear_buffers()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, main_framebuffer);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

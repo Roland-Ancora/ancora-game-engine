@@ -35,6 +35,7 @@ void SoundMultiple::play()
 		if (s[i].is_playing())
 			continue;
 		s[i].play();
+		break;
 	}
 }
 

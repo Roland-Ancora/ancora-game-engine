@@ -50,11 +50,10 @@ namespace age {
 	class Model3D {
 	protected:
 		Model3dData* model_data = 0;
-		glm::mat4 ALTR_fin_model_mat = glm::mat4(0);
 		glm::mat4 rotate_mat = glm::mat4(1), translate_mat = glm::mat4(1), scale_mat = glm::mat4(1);
 		float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f;
 		float x_scale = 1.0f, y_scale = 1.0f, z_scale = 1.0f;
-		float x_rot = 0.0f, y_rot = 0.0f, z_rot = 0.0f;
+		glm::quat rot = glm::quat(1, 0, 0, 0);
 		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 		float color_intensity = 0.0f;
 		GLuint vboIDs[4];
@@ -68,7 +67,7 @@ namespace age {
 	public:
 		glm::vec3 get_position() { return glm::vec3(x_pos, y_pos, z_pos); }
 		glm::vec3 get_scale() { return glm::vec3(x_scale, y_scale, z_scale); }
-		glm::mat4 get_model_matrix() { return ALTR_fin_model_mat == glm::mat4(0) ? translate_mat * rotate_mat * scale_mat : ALTR_fin_model_mat; }
+		glm::mat4 get_model_matrix() { return translate_mat * rotate_mat * scale_mat; }
 		glm::vec3 get_color() { return color; }
 		Model3dData* get_model_data() { return model_data; }
 		void set_color(float r, float g, float b) { color = glm::vec3(r, g, b); }
@@ -81,10 +80,11 @@ namespace age {
 		void move(float x, float y, float z);
 		void set_rotation(float angle, rotate_vector vec);
 		void set_rotation(glm::mat4 matrix);
+		void set_rotation(glm::quat q);
 		void set_only_rotation_mat(glm::mat4 matrix) { rotate_mat = matrix; }
-		void set_alternative_finnaly_matrix(glm::mat4 matrix) { ALTR_fin_model_mat = matrix; }
 		void rotate(float angle, rotate_vector vec);
 		void set_scale(float x, float y, float z);
+		glm::quat get_rotation() { return rot; }
 		glm::mat4 get_reverse_matrix();
 	public:
 		Model3D& operator = (const Model3D& model)
@@ -95,7 +95,7 @@ namespace age {
 				rotate_mat = model.rotate_mat, translate_mat = model.translate_mat, scale_mat = model.scale_mat;
 				x_pos = model.x_pos, y_pos = model.y_pos, z_pos = model.z_pos;
 				x_scale = model.x_scale, y_scale = model.y_scale, z_scale = model.z_scale;
-				x_rot = model.x_rot, y_rot = model.y_rot, z_rot = model.z_rot;
+				rot = model.rot;
 
 				glGenBuffers(4, vboIDs); 
 				glGenVertexArrays(1, &vaoID);
@@ -126,6 +126,7 @@ namespace age {
 		bool is_anim_loop = false;
 		bool anim_play = false;
 		friend class Model3D_Anim__child;
+		float anim_speed = 1.0f;
 	protected:
 		void update_anim_matrix();
 	public:
@@ -139,6 +140,7 @@ namespace age {
 		void disable_animation_loop() { is_anim_loop = false; }
 		double get_anim_progress() { return now_play_time / anim->anim_duration; }
 		bool is_anim_play() { return anim_play; }
+		void set_anim_speed(float s) { anim_speed = s; }
 	public:
 		void show_model_only();
 	};

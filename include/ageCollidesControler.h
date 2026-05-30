@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "ageCONSTANTS.h"
-#include "ageOBB.h"
+#include "ageAABB.h"
 #include "additions/ageForwardList.hpp"
 
 
@@ -11,7 +11,7 @@ namespace age {
 	enum obb_controler_element_type { OBB_DYNAMIC, OBB_STATIC };
 
 	struct collide_obb_answer {
-		bool collide = false;
+		collide_hit_answer hit;
 	};
 
 	struct dynamic_obb_struct {

@@ -48,12 +48,12 @@ collide_obb_answer CollidesControler::test_obb_with_statics(OBB* obb)
 {
 	collide_obb_answer ret;
 	for (int i = 0; i < static_obbs.size(); i++) {
-		if (obb->is_collide(*static_obbs[i]) || static_obbs[i]->is_collide(*obb)) {
-			ret.collide = true;
+		if (obb->is_collide(*static_obbs[i]).collided || static_obbs[i]->is_collide(*obb).collided) {
+			ret.hit.collided = true;
 			return ret;
 		}
 	}
-	ret.collide = false;
+	ret.hit.collided = false;
 	return ret;
 }
 
@@ -61,15 +61,12 @@ void CollidesControler::update()
 {
 	for (int i = 0; i < dynamic_obbs.size(); i++) {
 		for (int i2 = 0; i2 < static_obbs.size(); i2++) {
-			if ((*dynamic_obbs[i].obb).is_collide(*static_obbs[i2]) || (*static_obbs[i2]).is_collide(*dynamic_obbs[i].obb))
-				dynamic_obbs[i].answr.collide = true;
-		}
-	}
-	for (int i = 0; i < dynamic_obbs.size(); i++) {
-		for (int i2 = i + 1; i2 < dynamic_obbs.size(); i2++)
-			if ((*dynamic_obbs[i].obb).is_collide(*dynamic_obbs[i2].obb) || (*dynamic_obbs[i2].obb).is_collide(*dynamic_obbs[i].obb)) {
-				dynamic_obbs[i].answr.collide = true;
-				dynamic_obbs[i2].answr.collide = true;
+			collide_hit_answer hit = (*static_obbs[i2]).is_collide(*dynamic_obbs[i].obb);
+			collide_hit_answer hit2 = (*dynamic_obbs[i].obb).is_collide(*static_obbs[i2]);
+			if (hit.collided == true || hit2.collided == true) {
+				dynamic_obbs[i].answr.hit = hit.collided == true ? hit : hit2;
+				break;
 			}
+		}
 	}
 }

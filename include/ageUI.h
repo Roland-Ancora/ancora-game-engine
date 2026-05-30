@@ -42,6 +42,8 @@ extern "C"
 
 
 namespace age {
+
+	class UIWindow;
 	
 	class UIObject {
 	protected:
@@ -67,7 +69,8 @@ namespace age {
 		UIObject();
 		static UIObject* get_focused_object() { return focused_object; }
 		static void _clear_focused_object() { focused_object = 0; }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat) {}
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r) {}
+		virtual void show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r) {}
 		virtual void set_z_val(float z);
 		virtual void disable();
 	public:
@@ -120,14 +123,20 @@ namespace age {
 			0.0f, 0.0f
 		};
 		GLuint alpha_uniform_loc;
+		float TMP_visibility_to_black = 0.0f;
+		glm::vec3 clear_color = glm::vec3(1.0f, 0.0f, 0.0f);
 	public:
 		UIWindow(std::uint16_t resolutin_w, std::uint16_t resolution_h);
 		static UIWindow* get_active_ui_window() { return active_ui_window; }
 	public:
 		void use_main_ui_shader() { Camera::get_active_camera()->use_shader(&main_shader_prog_ui); }
 		GLuint _get_alpha_uniform_location() { return alpha_uniform_loc; }
+		TMP_Texture2D_OGLBased get_texture() { return TMP_Texture2D_OGLBased(FBO_texture); }
+		GLuint get_texture_id() { return FBO_texture; }
+		void set_clear_color(glm::vec3 color) { clear_color = color; }
 	public:
 		void show();
+		void show_only_in_buffer();
 	};
 
 	class UIImage : public UIObject {
@@ -152,12 +161,13 @@ namespace age {
 		};
 	public:
 		UIImage();
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
+		virtual void show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
 		virtual void set_z_val(float z);
 	public:
 		float get_part_from_x_begin() { return shown_part_from_x_l; }
 	public:
-		void set_texture(Texture2D* tex);
+		void set_texture(Texture2D* tex, UIWindow* win_r = 0);
 		void set_part_from_x_begin(float pc);
 		void set_part_from_y_begin(float pc);
 		void set_part_from_y_end(float pc);
@@ -173,7 +183,8 @@ namespace age {
 		UIButton(UIObject* p_obj) { UIImage(); set_parent_object(p_obj); }
 		UIButton(UIObject* p_obj, Texture2D* tex[4]);
 		virtual void disable() { is_active = false; is_btn_pressed = false; }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
+		virtual void show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r) { UIImage::show_only(p_mat, p_ui_mat, win_r); }
 	public:
 		void set_default_texture(Texture2D* tex) { default_texture = tex; set_texture(default_texture); }
 		void set_focus_texture(Texture2D* tex) { focus_texture = tex; }
@@ -182,30 +193,36 @@ namespace age {
 		bool is_pressed() { return is_btn_pressed; }
 		void disable_button() { is_btn_active = false; texture = disable_texture; }
 		void enable_button() { is_btn_active = true; texture = default_texture; }
+		bool get_active_button_state() { return is_btn_active; }
 		inline void set_textures(Texture2D* tex[4]);
+		void TMP_prinud_unpressed() { is_btn_pressed = false; is_btn_focus = false; texture = default_texture; }
 	};
 
 	class UIText : public UIObject {
 		std::string str = "";
 		float font_t_size = 0.1f, distance_between_lines = 0.0f;
-		float max_width = 1.0f;
+		float max_width = 10.0f;
 		std::vector<int> str_eds_symbol_nums;
 		Font* font;
 		GLuint vboIDs[2];
 		GLuint vaoID;
+		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 	private:
 		void calculate_str_end_symbol_nums();
 		void calculate_str_end_symbol_nums_w_words();
 		bool is_next_word_bigger_then_width(int char_start_word, float now_str_width);
 	public:
 		UIText() { glGenBuffers(2, vboIDs); glGenVertexArrays(1, &vaoID); }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
+		virtual void show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
 		virtual void set_z_val(float z);
 		virtual void set_size(float w, float h) {} // DOESN'T MAKE SENSE
 	public:
 		void set_font(Font* f) { font = f; }
 		void set_font_size(float size) { font_t_size = size; distance_between_lines = font_t_size / 2; calculate_str_end_symbol_nums_w_words(); }
 		int get_lines_count() { return static_cast<int>(str_eds_symbol_nums.size()); }
+		void set_color(float r, float g, float b) { color.r = r; color.g = g; color.b = b; }
+		void set_max_width(float w) { max_width = w; calculate_str_end_symbol_nums_w_words(); }
 	public:
 		void set_string(std::string string);
 	};
@@ -217,14 +234,14 @@ namespace age {
 	public:
 		virtual void set_size(float w, float h);
 		virtual void set_z_val(float z) {} // MUST BE REALIZED
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
 	public:
 		void update_childs();
 	};
 
 	class UIContainer : public UIObject {
 	public:
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
 		virtual void set_z_val(float z) {} // MUST BE REALIZED
 		virtual void set_size(float w, float h);
 	};
@@ -236,14 +253,15 @@ namespace age {
 		float cursor_last_pos_x = 0.0f;
 	public:
 		UISlider() { s_btn.set_parent_object(this); }
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
+		virtual void show_only(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r) { UIImage::show_only(p_mat, p_ui_mat, win_r); }
 	public:
-		void set_slider_button_texture_normal(Texture2D* tex) { s_btn.set_default_texture(tex); }
+		void set_slider_button_texture_normal(Texture2D* tex) { s_btn.set_default_texture(tex); s_btn.set_width(0.04f); s_btn.set_position_y(-1.0f); }
 		void set_slider_button_texture_focus(Texture2D* tex) { s_btn.set_focus_texture(tex); }
 		void set_slider_button_texture_press(Texture2D* tex) { s_btn.set_pressed_texture(tex); }
 		void set_slider_button_borders(float x1, float x2) { border_x1 = x1, border_x2 = x2; }
 		void set_slider_value(float val) { s_btn.set_position_x((100.0f - (border_x1 + border_x2)) * val + border_x1); }
-		float get_slider_value() { return (s_btn.get_position_x() - border_x1) / (100.0f - border_x1 - border_x2); }
+		float get_slider_value() { return (s_btn.get_position_x() - border_x1) / (border_x2 - border_x1 - s_btn.get_width()); }
 	};
 
 	class UIVideo : public UIObject {
@@ -285,7 +303,7 @@ namespace age {
 	public:
 		~UIVideo();
 		UIVideo();
-		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat);
+		virtual void show_and_update(glm::mat4 p_mat, glm::mat4 p_ui_mat, UIWindow* win_r);
 	public:
 		int get_duration() { return static_cast<int>(format_context->duration) < 0 ? -1 : static_cast<int>(format_context->duration) / AV_TIME_BASE; }
 	public:

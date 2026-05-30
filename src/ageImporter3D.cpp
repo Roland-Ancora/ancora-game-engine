@@ -10,6 +10,35 @@ Assimp::Importer Importer3D::importer;
 
 
 
+glm::mat4 ai_to_glm(const aiMatrix4x4& m)
+{
+	glm::mat4 result;
+
+	result[0][0] = m.a1;
+	result[1][0] = m.a2;
+	result[2][0] = m.a3;
+	result[3][0] = m.a4;
+
+	result[0][1] = m.b1;
+	result[1][1] = m.b2;
+	result[2][1] = m.b3;
+	result[3][1] = m.b4;
+
+	result[0][2] = m.c1;
+	result[1][2] = m.c2;
+	result[2][2] = m.c3;
+	result[3][2] = m.c4;
+
+	result[0][3] = m.d1;
+	result[1][3] = m.d2;
+	result[2][3] = m.d3;
+	result[3][3] = m.d4;
+
+	return result;
+}
+
+
+
 // Returns diffuse texture file name fomr mesh. Returns empty string if mesh hasn't diffuse texture.
 std::string Importer3D::get_diffuse_texture_file_name(aiMesh* mesh, const aiScene* scene, std::string self_dir, std::string self_file_name)
 {
@@ -94,7 +123,7 @@ int Importer3D::load_model(std::string dir_name, std::string file_name, Model3dD
 	return 1;
 }
 
-void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node, AGE_IMPORT_MODELS_GROUP_TYPE type)
+void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::string dir_name, std::string file_name, Model3dGroupDataNode& model_data_node, AGE_IMPORT_MODELS_GROUP_TYPE type, glm::mat4 parent_mat)
 {
 	if (node->mNumMeshes > 0) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[0]];
@@ -107,20 +136,18 @@ void Importer3D::load_model_group_node(aiNode* node, const aiScene* scene, std::
 			model_data_node.model.diffuse_texture.load_from_file(texture_file.c_str());
 	}
 
-	if (type == AGE_IMGT_N_DCMPS_MATRIX)
-		model_data_node.ALTR_fin_model_mat = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
-	else {
-		aiVector3D pos, rot, scale;
-		node->mTransformation.Decompose(scale, rot, pos);
-		model_data_node.position = glm::vec3(pos.x, pos.y, pos.z);
-		model_data_node.rotation = glm::vec3(rot.x, -rot.y, rot.z);
-		model_data_node.scale = glm::vec3(scale.x, scale.y, scale.z);
-	}
+	glm::mat4 local_mat = ai_to_glm(node->mTransformation);
+	glm::mat4 global_mat = parent_mat * local_mat;
+	glm::vec4 perspect;
+	glm::vec3 slew;
+	glm::quat gg;
+	glm::decompose(global_mat, model_data_node.scale, gg, model_data_node.position, slew, perspect);
+	model_data_node.rot = gg;
 
 	model_data_node.childs_count = node->mNumChildren;
 	model_data_node.childs = new Model3dGroupDataNode[model_data_node.childs_count];
 	for (int i = 0; i < model_data_node.childs_count; i++)
-		load_model_group_node(node->mChildren[i], scene, dir_name, file_name, model_data_node.childs[i], type);
+		load_model_group_node(node->mChildren[i], scene, dir_name, file_name, model_data_node.childs[i], type, global_mat);
 }
 
 int Importer3D::load_model_group(std::string dir_name, std::string file_name, Model3dGroupData& model_group_data, AGE_IMPORT_MODELS_GROUP_TYPE type)
@@ -132,12 +159,20 @@ int Importer3D::load_model_group(std::string dir_name, std::string file_name, Mo
 	}
 
 	aiNode* root_node = scene->mRootNode;
+	glm::mat4 root_mat = ai_to_glm(root_node->mTransformation);
 	if (model_group_data.childs_count != 0)
 		model_group_data.clear();
 	model_group_data.childs_count = root_node->mNumChildren;
 	model_group_data.childs = new Model3dGroupDataNode[model_group_data.childs_count];
+
+	glm::vec4 perspect;
+	glm::vec3 slew;
+	glm::quat gg;
+	glm::vec3 sc, po, ro;
+	glm::decompose(root_mat, sc, gg, po, slew, perspect);
+
 	for (int i = 0; i < model_group_data.childs_count; i++)
-		load_model_group_node(root_node->mChildren[i], scene, dir_name, file_name, model_group_data.childs[i], type);
+		load_model_group_node(root_node->mChildren[i], scene, dir_name, file_name, model_group_data.childs[i], type, root_mat);
 	importer.FreeScene();
 	return 1;
 }
@@ -166,9 +201,8 @@ int Importer3D::load_animation(std::string dir_name, std::string file_name, Anim
 		aiQuatKey rotation_key = first_node->mRotationKeys[i];
 		glm::quat quaternion = glm::quat(rotation_key.mValue.x, rotation_key.mValue.y, rotation_key.mValue.z, rotation_key.mValue.w);
 		glm::vec3 eul = glm::eulerAngles(quaternion);
-		animation_data.nodes[i].rotation[0] = eul.y; // - because OpenGL rotates object counterclock-wise
-		animation_data.nodes[i].rotation[1] = eul.z + glm::radians(90.0f); // + 90 degreed because when is going export to the FBX file format, 
-// Blender rotate model rotation data and animation rotations data, but here only require model rotation.
+		animation_data.nodes[i].rotation[0] = eul.y;
+		animation_data.nodes[i].rotation[1] = eul.z;
 		animation_data.nodes[i].rotation[2] = eul.x;
 
 		aiVectorKey scaling_key = first_node->mScalingKeys[i];
